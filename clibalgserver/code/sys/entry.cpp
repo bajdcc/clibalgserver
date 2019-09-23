@@ -1,7 +1,7 @@
 #include "/include/io"
 #include "/include/shell"
 int main(int argc, char **argv) {
-    path_add("/bin");
+    path_add("/exe");
     int pid = shell("/usr/main");
     if (pid < 0) {
         switch (pid) {
@@ -13,6 +13,7 @@ int main(int argc, char **argv) {
         case -2:
             set_fg(240, 0, 0);
             put_string("[ERROR] Compile failed.\n");
+            shell("cat /log/err");
             restore_fg();
             break;
         case -3:

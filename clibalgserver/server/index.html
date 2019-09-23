@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="/layui/css/layui.css" media="all">
     <link rel="stylesheet" href="/css/layx.min.css" media="all">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <style>
+        #editor {
+            width: 600px;
+            height: 300px;
+        }
+    </style>
     <title>clibalgserver</title>
 </head>
 
@@ -25,7 +31,7 @@
                     <div class="layui-form-item">
                         <label class="layui-form-label">输入代码</label>
                         <div class="layui-input-block">
-                            <textarea placeholder="请输入代码" class="layui-textarea" v-model="tinput"></textarea>
+                            <div id="editor"></div>
                         </div>
                     </div>
                     <div class="layui-form-item">
@@ -48,12 +54,15 @@
     <script type="text/javascript" src="layui/layui.js" charset="utf-8"></script>
     <script type="text/javascript" src="js/layx.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="js/vue.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="ace/ace.js" charset="utf-8"></script>
+    <script type="text/javascript" src="ace/ext-language_tools.js" charset="utf-8"></script>
+    <script type="text/javascript" src="ace/theme-twilight.js" charset="utf-8"></script>
+    <script type="text/javascript" src="ace/mode-c_cpp.js" charset="utf-8"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             var app = new Vue({
                 el: '#app',
                 data: {
-                    tinput: "",
                     toutput: ""
                 },
                 methods: {
@@ -64,7 +73,7 @@
                             method: 'POST',
                             contentType: 'application/json;charset=utf-8',
                             data: JSON.stringify({
-                                text: _this.tinput
+                                text: editor.getValue()
                             }),
                             success: function(d) {
                                 layx.destroy('load');
@@ -81,6 +90,17 @@
                     },
                 }
             });
+            var editor = ace.edit("editor");
+            ace.require("ace/ext/language_tools");
+            editor.setTheme("ace/theme/twilight");
+            editor.getSession().setMode("ace/mode/c_cpp");
+            editor.setFontSize(18);
+            editor.setOptions({
+                enableBasicAutocompletion: true,
+                enableSnippets: true,
+                enableLiveAutocompletion: true
+            });
+            editor.setValue("#include \"/include/io\"\nint main(int argc, char** argv) {\n    put_string(\"Hello world!\");\n}");
         });
     </script>
 </body>
