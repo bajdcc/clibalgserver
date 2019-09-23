@@ -180,8 +180,9 @@ xcopy /r /y /e "$(ProjectDir)code" "$(TargetDir)code"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="clibalgserver.cpp" />
+    <ClCompile Include="mime.cpp" />
     <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -210,6 +211,7 @@ xcopy /r /y /e "$(ProjectDir)code" "$(TargetDir)code"</Command>
     <ClInclude Include="event2\tag_compat.h" />
     <ClInclude Include="event2\thread.h" />
     <ClInclude Include="event2\util.h" />
+    <ClInclude Include="mime.h" />
     <ClInclude Include="rapidjson\allocators.h" />
     <ClInclude Include="rapidjson\document.h" />
     <ClInclude Include="rapidjson\encodedstream.h" />

@@ -9,6 +9,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/error/en.h>
 #include "../cparser/parser.h"
+#include <mime.h>
 
 #define SERVER_NAME "clibalgserver"
 #define WWW_ROOT "./server"
@@ -137,6 +138,12 @@ void generic_handler(struct evhttp_request* req, void* arg)
         evbuffer_add_printf(buf, "Hello world.<br> URL: %s\n", url);
     }
     evhttp_add_header(evhttp_request_get_output_headers(req), "Server", SERVER_NAME);
+    std::string U(url);
+    std::string ext;
+    auto idx = U.find_last_of('.');
+    if (idx != std::string::npos)
+        ext = U.substr(U.find_last_of('.') + 1);
+    evhttp_add_header(evhttp_request_get_output_headers(req), "Content-Type", clib::get_mime_from_ext(ext).c_str());
     if (suc)
         evhttp_send_reply(req, HTTP_OK, "OK", buf);
     else

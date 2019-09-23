@@ -14,6 +14,8 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <regex>
+#include <tuple>
 
 #include "event2/event.h"
 

@@ -256,7 +256,7 @@ namespace clib {
 
         static time_t now();
 
-        char* file_time(const time_t& t) const;
+        char* file_time(char* result, const time_t& t) const;
         bool can_rm(const vfs_node::ref& node) const;
 
     public:
