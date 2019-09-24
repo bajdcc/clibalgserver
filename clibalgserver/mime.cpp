@@ -199,6 +199,8 @@ namespace clib {
                 m.insert(std::make_pair(std::get<0>(l), std::get<1>(l)));
             }
         }
+        if (ext.empty())
+            return "application/octet-stream";
         auto f = m.find(ext);
         if (f != m.end()) {
             return f->second;

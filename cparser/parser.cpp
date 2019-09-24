@@ -15,10 +15,14 @@ namespace clib {
         auto dt = std::chrono::duration_cast<std::chrono::seconds>(now - last_clock);
         while (gui.is_running() && dt < 2s) {
             gui.draw(false, 30.0);
-            last_clock = std::chrono::system_clock::now();
+            now = std::chrono::system_clock::now();
+            dt = std::chrono::duration_cast<std::chrono::seconds>(now - last_clock);
         }
+        auto run = gui.is_running();
         output = gui.output();
         gui.reset();
+        if (run)
+            output += "\n[ERROR] Running time out.";
         return P_OK;
     }
 }

@@ -15,18 +15,35 @@
 #define WWW_ROOT "./server"
 
 std::unordered_map<std::string, std::vector<byte>> www;
+std::vector<std::string> def_index = {
+    "index.html",
+    "index.htm",
+};
 
-bool handle_static(const char* url, evbuffer* buf)
+int handle_static(struct evhttp_request* req, const char* url, evbuffer* buf)
 {
-    auto f = www.find(url);
+    std::string U(url);
+    if (U.empty())
+        return HTTP_NOTFOUND;
+    if (U.back() == '/') {
+        for (auto& idx : def_index) {
+            auto f = www.find(U + idx);
+            if (f != www.end()) {
+                evhttp_add_header(evhttp_request_get_output_headers(req), "Location", (U + idx).c_str());
+                return HTTP_MOVETEMP;
+            }
+        }
+    }
+
+    auto f = www.find(U);
     if (f == www.end())
-        return false;
+        return HTTP_NOTFOUND;
 
     evbuffer_add(buf, (const char *)f->second.data(), f->second.size());
-    return true;
+    return HTTP_OK;
 }
 
-bool handle_api_compile(const char* url, evbuffer* buf, char* data, size_t len)
+int handle_api_compile(const char* url, evbuffer* buf, char* data, size_t len)
 {
     using namespace rapidjson;
 
@@ -37,7 +54,7 @@ bool handle_api_compile(const char* url, evbuffer* buf, char* data, size_t len)
         evbuffer_add_printf(buf, R"(Parse Error(offset %u): %s)",
             (unsigned)d.GetErrorOffset(),
             GetParseError_En(d.GetParseError()));
-        return false;
+        return HTTP_BADREQUEST;
     }
 
     auto text = d.FindMember("text");
@@ -65,7 +82,7 @@ bool handle_api_compile(const char* url, evbuffer* buf, char* data, size_t len)
             r.Accept(writer);
 
             evbuffer_add_printf(buf, buffer.GetString());
-            return true;
+            return HTTP_OK;
         }
         else {
             evbuffer_add_printf(buf, "{Need string}");
@@ -74,7 +91,49 @@ bool handle_api_compile(const char* url, evbuffer* buf, char* data, size_t len)
     else {
         evbuffer_add_printf(buf, "{Need text}");
     }
-    return false;
+    return HTTP_BADREQUEST;
+}
+
+const char* code2str(int code)
+{
+    switch (code)
+    {
+    case HTTP_OK: return "OK";
+    case HTTP_NOCONTENT: return "No Content";
+    case HTTP_MOVEPERM: return "Moved Permanently";
+    case HTTP_MOVETEMP: return "Found";
+    case HTTP_NOTMODIFIED: return "Not Modified";
+    case HTTP_BADREQUEST: return "Bad Request";
+    case HTTP_NOTFOUND: return "Not Found";
+    case HTTP_BADMETHOD: return "Method Not Allowed";
+    case HTTP_ENTITYTOOLARGE: return "Request Entity Too Large";
+    case HTTP_EXPECTATIONFAILED: return "Expectation Failed";
+    case HTTP_INTERNAL: return "Internal Server Error";
+    case HTTP_NOTIMPLEMENTED: return "Not Implemented";
+    case HTTP_SERVUNAVAIL: return "Service Unavailable";
+    default:
+        break;
+    }
+    return "Not Implemented";
+}
+
+const char* method2str(int code)
+{
+    switch (code)
+    {
+    case EVHTTP_REQ_GET: return "GET";
+    case EVHTTP_REQ_POST: return "POST";
+    case EVHTTP_REQ_HEAD: return "HEAD";
+    case EVHTTP_REQ_PUT: return "PUT";
+    case EVHTTP_REQ_DELETE: return "DELETE";
+    case EVHTTP_REQ_OPTIONS: return "OPTIONS";
+    case EVHTTP_REQ_TRACE: return "TRACE";
+    case EVHTTP_REQ_CONNECT: return "CONNECT";
+    case EVHTTP_REQ_PATCH: return "PATCH";
+    default:
+        break;
+    }
+    return "UNKNOWN";
 }
 
 void generic_handler(struct evhttp_request* req, void* arg)
@@ -86,7 +145,11 @@ void generic_handler(struct evhttp_request* req, void* arg)
         return;
     }
 
-    auto suc = true;
+    using namespace std::chrono;
+    using namespace std::literals::chrono_literals;
+    auto now = system_clock::now();
+
+    int suc = HTTP_OK;
     auto u = evhttp_request_get_uri(req);
     auto uri = evhttp_uri_parse(u);
     if (!uri)
@@ -97,22 +160,20 @@ void generic_handler(struct evhttp_request* req, void* arg)
     auto url = evhttp_uri_get_path(uri);
     auto cmd = evhttp_request_get_command(req);
     if (cmd == EVHTTP_REQ_GET) {
-        printf("GET %s\n", url);
-        suc = handle_static(url, buf);
+        suc = handle_static(req, url, buf);
     }
     else if (cmd == EVHTTP_REQ_POST) {
-        printf("POST %s\n", url);
         evhttp_request_get_command(req);
         auto input = evhttp_request_get_input_buffer(req);
         auto post_size = evbuffer_get_length(input);
         if (post_size <= 0)
         {
             evbuffer_add_printf(buf, R"(Empty postdata)");
-            suc = false;
+            suc = HTTP_BADREQUEST;
         }
         else
         {
-            suc = false;
+            suc = HTTP_BADREQUEST;
             auto b = (char*)malloc(post_size + 1);
             if (!b) {
                 evbuffer_add_printf(buf, R"(Malloc failed)");
@@ -133,6 +194,9 @@ void generic_handler(struct evhttp_request* req, void* arg)
             }
         }
     }
+    else if (cmd == EVHTTP_REQ_HEAD) {
+
+    }
     else {
         printf("Unsupported Method %s\n", url);
         evbuffer_add_printf(buf, "Hello world.<br> URL: %s\n", url);
@@ -144,10 +208,9 @@ void generic_handler(struct evhttp_request* req, void* arg)
     if (idx != std::string::npos)
         ext = U.substr(U.find_last_of('.') + 1);
     evhttp_add_header(evhttp_request_get_output_headers(req), "Content-Type", clib::get_mime_from_ext(ext).c_str());
-    if (suc)
-        evhttp_send_reply(req, HTTP_OK, "OK", buf);
-    else
-        evhttp_send_reply(req, HTTP_BADREQUEST, "Bad Request", buf);
+    auto dt = duration_cast<milliseconds>(system_clock::now() - now).count();
+    printf("%s %s %d %d %lldms\n", method2str(cmd), url, suc, evbuffer_get_length(buf), dt);
+    evhttp_send_reply(req, suc, code2str(suc), buf);
     evbuffer_free(buf);
 }
 

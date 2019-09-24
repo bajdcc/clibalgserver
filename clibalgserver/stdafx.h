@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <regex>
 #include <tuple>
+#include <chrono>
 
 #include "event2/event.h"
 
