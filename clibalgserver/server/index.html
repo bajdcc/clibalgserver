@@ -62,8 +62,6 @@
     <script type="text/javascript" src="js/vue.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="ace/ace.js" charset="utf-8"></script>
     <script type="text/javascript" src="ace/ext-language_tools.js" charset="utf-8"></script>
-    <script type="text/javascript" src="ace/theme-twilight.js" charset="utf-8"></script>
-    <script type="text/javascript" src="ace/mode-c_cpp.js" charset="utf-8"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             var app = new Vue({
@@ -98,8 +96,9 @@
             });
             var editor = ace.edit("editor");
             ace.require("ace/ext/language_tools");
-            editor.setTheme("ace/theme/twilight");
-            editor.getSession().setMode("ace/mode/c_cpp");
+            editor.setTheme("ace/theme/chrome");
+            editor.session.setMode("ace/mode/c_cpp");
+            editor.setShowPrintMargin(true);
             editor.setFontSize(18);
             editor.setOptions({
                 enableBasicAutocompletion: true,
