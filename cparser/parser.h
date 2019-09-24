@@ -16,4 +16,5 @@ namespace clib {
     };
 
     CPARSER_API parser_ret parser(std::string input, std::string& output);
+    CPARSER_API parser_ret visualize(std::string input, std::string& output);
 }

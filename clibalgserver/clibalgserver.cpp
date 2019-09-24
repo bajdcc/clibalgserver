@@ -98,7 +98,7 @@ int handle_api(API api, evbuffer* buf, char* data, size_t len)
                 ret = parser(str, out);
             }
             else if (api == API_visualize){
-                ret = parser(str, out);
+                ret = visualize(str, out);
             }
             
             Document r;

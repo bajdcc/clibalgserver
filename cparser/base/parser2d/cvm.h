@@ -141,6 +141,7 @@ namespace clib {
         int output(int id);
         bool interrupt();
         bool math(int id);
+        bool tracer(int id);
         void cast();
 
         void init_fs();
@@ -179,6 +180,12 @@ namespace clib {
         };
 
         static const char* state_string(ctx_state_t);
+
+        struct breakpoint {
+            int type;
+            uint32 addr_start, addr_end;
+            std::vector<int> matrix;
+        };
 
         struct context_t {
             uint flag{ 0 };
@@ -240,6 +247,8 @@ namespace clib {
             std::unordered_set<int> handles;
             std::vector<string_t> paths;
             string_t cmd;
+            // BREAKPOINTS
+            std::unordered_map<std::string, breakpoint> breakpoints;
         };
         context_t* ctx{ nullptr };
         int available_tasks{ 0 };

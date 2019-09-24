@@ -213,6 +213,11 @@ namespace clib {
 
     template<class T>
     T cvm::vmm_set(uint32_t va, T value) {
+
+        enum trace_type {
+            T_CHAR,
+            T_INT,
+        };
         if (!(ctx->flag & CTX_KERNEL)) {
             if ((ctx->flag & CTX_USER_MODE) && (va & 0xF0000000) == USER_BASE) {
                 error("code segment cannot be written");
@@ -221,6 +226,26 @@ namespace clib {
         }
         uint32_t pa;
         if (vmm_ismap(va, &pa)) {
+            for (const auto& b : ctx->breakpoints) {
+                const auto& bp = b.second;
+                if (va >= bp.addr_start && va < bp.addr_end) {
+                    cgui::trace_record record;
+                    record.name = b.first;
+                    record.type = bp.type;
+                    switch (bp.type) {
+                    case T_CHAR:
+                        record.data._c = (char)(((uint32)value) & 0xff);
+                        break;
+                    case T_INT:
+                        record.data._i = (int)(((uint32)value) & 0xffffffff);
+                        break;
+                    default:
+                        break;
+                    }
+                    gui->trace_records.push_back(record);
+                    break;
+                }
+            }
             *(T*)((byte*)pa + OFFSET_INDEX(va)) = value;
             return value;
         }
@@ -2455,10 +2480,61 @@ namespace clib {
         return false;
     }
 
+    int trace_type_str(int n) {
+        enum trace_type {
+            T_CHAR,
+            T_INT,
+        };
+        static int type_str[] = {
+            1,
+            4
+        };
+        if (n < 0 || n >= sizeof(type_str) / sizeof(int))
+            return 1;
+        return type_str[n];
+    }
+
+    bool cvm::tracer(int id) {
+        switch (id) {
+        case 301:
+        {
+            struct __trace_var__ {
+                uint32 name;
+                uint32 arr;
+                int type;
+            };
+            auto s = vmm_get<__trace_var__>(ctx->ax._ui);
+            breakpoint bp;
+            auto name = vmm_getstr(s.name);
+            bp.addr_start = s.arr;
+            bp.addr_end = s.arr + trace_type_str(s.type);
+            bp.type = s.type;
+            ctx->breakpoints.insert(std::make_pair(name, bp));
+        }
+            break;
+        case 304:
+        {
+            auto s = vmm_getstr(ctx->ax._ui);
+            ctx->breakpoints.erase(s);
+        }
+        break;
+        default:
+#if LOG_SYSTEM
+            ATLTRACE("[SYSTEM] ERR  | unknown interrupt: %d\n", ctx->ax._i);
+#endif
+            error("unknown interrupt");
+            break;
+        }
+        ctx->pc += INC_PTR;
+        return false;
+    }
+
     bool cvm::interrupt() {
         auto id = vmm_get(ctx->pc);
         if (id > 200 && id < 300)
             return math(id);
+        if (id > 300 && id < 400)
+            return tracer(id);
         switch (id) {
         case 0:
         case 1:

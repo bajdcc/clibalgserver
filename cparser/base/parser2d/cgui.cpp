@@ -1203,4 +1203,24 @@ namespace clib {
         L = L.Trim();
         return std::string(CStringA(L).GetBuffer(0));
     }
+
+    std::string cgui::tracer() const
+    {
+        enum trace_type {
+            T_CHAR,
+            T_INT,
+        };
+        std::stringstream ss;
+        char sz[256];
+        for (const auto& r : trace_records) {
+            if (r.type == T_INT)
+                snprintf(sz, sizeof(sz), "Name: %s, Type: int, Value: %d", r.name.c_str(), r.data._i);
+            else if (r.type == T_CHAR)
+                snprintf(sz, sizeof(sz), "Name: %s, Type: char, Value: %c", r.name.c_str(), r.data._c);
+            else
+                continue;
+            ss << sz << std::endl;
+        }
+        return ss.str();
+    }
 }

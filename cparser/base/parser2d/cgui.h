@@ -71,6 +71,7 @@ namespace clib {
 
         bool is_running() const;
         std::string output() const;
+        std::string tracer() const;
 
     private:
         void reset_ips();
@@ -96,6 +97,19 @@ namespace clib {
         bool save_bin(const string_t& name);
         bool get_fs_time(const string_t& name, const string_t& ext, std::vector<string_t>& time);
         void reset();
+
+    private:
+        friend class cvm;
+        struct trace_record {
+            std::string name;
+            int type;
+            std::vector<int> loc;
+            union {
+                char _c;
+                int _i;
+            } data;
+        };
+        std::vector<trace_record> trace_records;
 
     private:
         cgen gen;

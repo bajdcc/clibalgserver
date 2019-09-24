@@ -105,7 +105,15 @@
                 enableSnippets: true,
                 enableLiveAutocompletion: true
             });
-            editor.setValue("#include \"/include/io\"\nint main(int argc, char** argv) {\n    put_string(\"Hello world!\");\n}");
+            editor.setValue("#include \"/include/io\"\n#include \"/include/trace\"\n" +
+                "int main(int argc, char** argv) {\n" +
+                "    int a = 0;\n" +
+                "    trace_var(\"a\", &a, T_INT);\n" +
+                "    a = 1;\n" +
+                "    a++;\n" +
+                "    a -= 2;\n" +
+                "    trace_end(\"a\");\n" +
+                "}");
         });
     </script>
 </body>
