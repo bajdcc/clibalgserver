@@ -137,7 +137,7 @@ namespace clib {
 
         string_t get_stacktrace() const;
 
-        char* output_fmt(char* buf, int id) const;
+        char* output_fmt(char* buf, int n, int id) const;
         int output(int id);
         bool interrupt();
         bool math(int id);

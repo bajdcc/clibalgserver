@@ -2264,28 +2264,28 @@ namespace clib {
         }
     }
 
-    char* cvm::output_fmt(char* str, int id) const {
+    char* cvm::output_fmt(char* str, int n, int id) const {
         switch (id) {
         case 1:
-            snprintf(str, sizeof(str), "%d", ctx->ax._i);
+            snprintf(str, n, "%d", ctx->ax._i);
             break;
         case 2:
-            snprintf(str, sizeof(str), "%p", ctx->ax._p);
+            snprintf(str, n, "%p", ctx->ax._p);
             break;
         case 4:
-            snprintf(str, sizeof(str), "%f", ctx->ax._f);
+            snprintf(str, n, "%f", ctx->ax._f);
             break;
         case 6:
-            snprintf(str, sizeof(str), "%f", ctx->ax._d);
+            snprintf(str, n, "%f", ctx->ax._d);
             break;
         case 7:
-            snprintf(str, sizeof(str), "%lld", ctx->ax._q);
+            snprintf(str, n, "%lld", ctx->ax._q);
             break;
         case 9:
-            snprintf(str, sizeof(str), "%llu", ctx->ax._uq);
+            snprintf(str, n, "%llu", ctx->ax._uq);
             break;
         default:
-            snprintf(str, sizeof(str), "[Invalid format]");
+            snprintf(str, n, "[Invalid format]");
             break;
         }
         return str;
@@ -2299,7 +2299,7 @@ namespace clib {
                 }
                 else {
                     char buf[128];
-                    auto s = output_fmt(buf, id);
+                    auto s = output_fmt(buf, sizeof(buf), id);
                     while (*s) tasks[ctx->output_redirect]->input_queue.push_back(*s++);
                 }
             }
@@ -2313,7 +2313,7 @@ namespace clib {
             }
             else {
                 char buf[128];
-                auto s = output_fmt(buf, id);
+                auto s = output_fmt(buf, sizeof(buf), id);
                 while (*s) gui->put_char(*s++);
             }
         }

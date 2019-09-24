@@ -20,6 +20,18 @@ std::vector<std::string> def_index = {
     "index.htm",
 };
 
+std::string gmt_now;
+void init_time() {
+    using namespace std::chrono;
+    using namespace std::literals::chrono_literals;
+    auto time_now = system_clock::to_time_t(system_clock::now());
+    tm _t;
+    gmtime_s(&_t, &time_now);
+    std::stringstream ss;
+    ss << std::put_time(&_t, "%a, %d %b %Y %H:%M:%S %Z");
+    gmt_now = ss.str();
+}
+
 int handle_static(struct evhttp_request* req, const char* url, evbuffer* buf)
 {
     std::string U(url);
@@ -39,8 +51,18 @@ int handle_static(struct evhttp_request* req, const char* url, evbuffer* buf)
     if (f == www.end())
         return HTTP_NOTFOUND;
 
-    evbuffer_add(buf, (const char *)f->second.data(), f->second.size());
-    return HTTP_OK;
+    auto since = evhttp_find_header(evhttp_request_get_input_headers(req), "If-Modified-Since");
+    if (since) {
+        evhttp_add_header(evhttp_request_get_output_headers(req), "Cache-Control", "max-age=120");
+        return HTTP_NOTMODIFIED;
+    }
+    else {
+        evbuffer_add(buf, (const char*)f->second.data(), f->second.size());
+        evhttp_add_header(evhttp_request_get_output_headers(req), "Cache-Control", "max-age=120");
+        evhttp_add_header(evhttp_request_get_output_headers(req), "Last-Modified", gmt_now.c_str());
+        return HTTP_OK;
+    }
+
 }
 
 int handle_api_compile(const char* url, evbuffer* buf, char* data, size_t len)
@@ -263,6 +285,7 @@ void load_dir(const std::string& path)
 
 int main()
 {
+    init_time();
     load_dir("");
 
     WSADATA wsaData;
