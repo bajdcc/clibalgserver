@@ -28,7 +28,7 @@ void init_time() {
     tm _t;
     gmtime_s(&_t, &time_now);
     std::stringstream ss;
-    ss << std::put_time(&_t, "%a, %d %b %Y %H:%M:%S %Z");
+    ss << std::put_time(&_t, "%a, %d %b %Y %H:%M:%S GMT");
     gmt_now = ss.str();
 }
 
@@ -65,7 +65,12 @@ int handle_static(struct evhttp_request* req, const char* url, evbuffer* buf)
 
 }
 
-int handle_api_compile(const char* url, evbuffer* buf, char* data, size_t len)
+enum API {
+    API_compile,
+    API_visualize,
+};
+
+int handle_api(API api, evbuffer* buf, char* data, size_t len)
 {
     using namespace rapidjson;
 
@@ -87,11 +92,18 @@ int handle_api_compile(const char* url, evbuffer* buf, char* data, size_t len)
             auto str = std::string(s.GetString());
             decltype(str) out;
 
-            auto ret = clib::parser(str, out);
+            using namespace clib;
+            parser_ret ret = P_ERROR;
+            if (api == API_compile) {
+                ret = parser(str, out);
+            }
+            else if (api == API_visualize){
+                ret = parser(str, out);
+            }
             
             Document r;
             r.SetObject();
-            if (ret != clib::P_OK) {
+            if (ret != P_OK) {
                 r.AddMember("code", Value(400), r.GetAllocator());
             }
             else {
@@ -206,7 +218,9 @@ void generic_handler(struct evhttp_request* req, void* arg)
                 if (strncmp(url, "/api", 4) == 0)
                 {
                     if (strcmp(url + 4, "/compile") == 0)
-                        suc = handle_api_compile(url, buf, b, post_size);
+                        suc = handle_api(API_compile, buf, b, post_size);
+                    else if (strcmp(url + 4, "/visualize") == 0)
+                        suc = handle_api(API_visualize, buf, b, post_size);
                     else
                         evbuffer_add_printf(buf, R"(Invalid API)", b);
                 }

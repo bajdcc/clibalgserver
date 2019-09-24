@@ -12,6 +12,7 @@ namespace clib {
 
     enum parser_ret {
         P_OK,
+        P_ERROR,
     };
 
     CPARSER_API parser_ret parser(std::string input, std::string& output);
