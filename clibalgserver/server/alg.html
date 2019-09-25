@@ -26,6 +26,7 @@
                         <label class="layui-form-label">链接</label>
                         <div class="layui-input-block">
                             <a href="/">首页</a>
+                            <a href="#" @click="reload">重置缓存</a>
                             <a href="#" @click="test('test_var')">测试变量</a>
                             <a href="#" @click="test('test_1d')">测试一维数组</a>
                             <a href="#" @click="test('test_2d')">测试二维数组</a>
@@ -62,6 +63,7 @@
     <script type="text/javascript" src="ace/ace.js" charset="utf-8"></script>
     <script type="text/javascript" src="ace/ext-language_tools.js" charset="utf-8"></script>
     <script type="text/javascript">
+        layui.use('layer');
         $(document).ready(function() {
             function load_text(url) {
                 $.get(url, function(d) {
@@ -88,9 +90,15 @@
                             success: function(d) {
                                 layx.destroy('load');
                                 var data = JSON.parse(d);
-                                if (data.code == 200)
-                                    _this.toutput = data.text;
-                                else
+                                if (data.code == 200) {
+                                    var obj = JSON.parse(data.text);
+                                    if (obj.code == 200) {
+                                        _this.toutput = data.text;
+                                        _this.show_alg(obj.data);
+                                    } else {
+                                        _this.toutput = "发生错误：\n" + obj.error;
+                                    }
+                                } else
                                     _this.toutput = data.text;
                             }
                         }).error(function(e) {
@@ -100,6 +108,61 @@
                     },
                     test: function(t) {
                         load_text("example/" + t + ".cpp");
+                    },
+                    reload: function() {
+                        layx.load('reload', '重置缓存……');
+                        var _this = this;
+                        $.ajax('/api/reload', {
+                            method: 'POST',
+                            contentType: 'application/json;charset=utf-8',
+                            data: JSON.stringify({
+                                test: 123
+                            }),
+                            success: function(d) {
+                                layx.destroy('reload');
+                                layer.msg("重置缓存成功");
+                            }
+                        }).error(function(e) {
+                            layx.destroy('reload');
+                            layer.msg("重置缓存失败");
+                        });
+                    },
+                    show_alg: function(obj) {
+                        var len = obj.length;
+                        var pro = '<p>当前步骤：{{current+"/"+total}}</p><br>';
+                        pro += '<div class="layui-progress layui-progress-big" lay-filter="step-pro" lay-showpercent="true"><div class="layui-progress-bar" lay-percent="0%"></div></div>';
+                        var cnt = '<div style="margin: 15px;" id="step">' + pro + '</div>';
+                        layer.open({
+                            type: 1,
+                            offset: ['50px', '50px'],
+                            area: ['250px', '200px'],
+                            id: 'step',
+                            title: '算法步骤',
+                            content: cnt,
+                            shadeClose: false,
+                            closeBtn: false,
+                            fixed: true,
+                            resize: false,
+                            btn: ['继续', '重置', '结束'],
+                            btnAlign: 'c',
+                            success: function() {
+                                layui.use('element', function() {
+                                    var element = layui.element;
+                                    element.progress('step-pro', 0 / len);
+                                });
+                                var app = new Vue({
+                                    el: '#step',
+                                    data: {
+                                        total: len,
+                                        current: 0,
+                                    },
+                                    methods: {}
+                                });
+                            },
+                            yes: function() {},
+                            btn2: function() {},
+                            btn3: function() {},
+                        });
                     }
                 }
             });

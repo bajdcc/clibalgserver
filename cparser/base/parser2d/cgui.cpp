@@ -1258,6 +1258,18 @@ namespace clib {
         Document d;
         auto& allocator = d.GetAllocator();
         d.SetObject();
+        if (trace_records.empty()) {
+            auto o = output();
+            if (o.empty()) {
+                return "{\"code\":400,\"error\":\"empty tracer and output\"}";
+            }
+            d.AddMember("code", Value(400), allocator);
+            d.AddMember("error", StringRef(o.c_str()), allocator);
+            StringBuffer buffer;
+            Writer<StringBuffer> writer(buffer);
+            d.Accept(writer);
+            return buffer.GetString();
+        }
         d.AddMember("code", Value(200), allocator);
         enum trace_type {
             T_CHAR,

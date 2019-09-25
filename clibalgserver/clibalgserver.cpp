@@ -62,17 +62,24 @@ int handle_static(struct evhttp_request* req, const char* url, evbuffer* buf)
         evhttp_add_header(evhttp_request_get_output_headers(req), "Last-Modified", gmt_now.c_str());
         return HTTP_OK;
     }
-
 }
+
+void reload();
 
 enum API {
     API_compile,
     API_visualize,
+    API_reload,
 };
 
 int handle_api(API api, evbuffer* buf, char* data, size_t len)
 {
     using namespace rapidjson;
+
+    if (api == API_reload) {
+        reload();
+        return HTTP_OK;
+    }
 
     Document d;
 
@@ -221,6 +228,8 @@ void generic_handler(struct evhttp_request* req, void* arg)
                         suc = handle_api(API_compile, buf, b, post_size);
                     else if (strcmp(url + 4, "/visualize") == 0)
                         suc = handle_api(API_visualize, buf, b, post_size);
+                    else if (strcmp(url + 4, "/reload") == 0)
+                        suc = handle_api(API_reload, buf, b, post_size);
                     else
                         evbuffer_add_printf(buf, R"(Invalid API)", b);
                 }
@@ -295,6 +304,12 @@ void load_dir_rec(const std::string& path)
 void load_dir(const std::string& path)
 {
     load_dir_rec(path);
+}
+
+void reload() {
+    init_time();
+    www.clear();
+    load_dir("");
 }
 
 int main()
