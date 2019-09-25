@@ -2,6 +2,8 @@
 #include "parser.h"
 #include "parser2d/cgui.h"
 
+#define SHOW_TEXT 0
+
 namespace clib {
 
     CPARSER_API parser_ret parser(std::string input, std::string& output)
@@ -41,13 +43,23 @@ namespace clib {
             dt = std::chrono::duration_cast<std::chrono::seconds>(now - last_clock);
         }
         auto run = gui.is_running();
+#if SHOW_TEXT
         output = gui.tracer();
         if (output.empty()) {
             output = gui.output();
         }
-        gui.reset();
         if (run)
             output += "\n[ERROR] Running time out.";
+#else
+        output = gui.tracer_json();
+        if (output.empty()) {
+            output = "{\"code\":400,\"error\":\"empty tracer\"}";
+        }
+        else if (run) {
+            output = "{\"code\":400,\"error\":\"running timeout\"}";
+        }
+#endif
+        gui.reset();
         return P_OK;
     }
 }

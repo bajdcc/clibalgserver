@@ -12,6 +12,10 @@
 #include "cexception.h"
 #include "cnet.h"
 #include "crev.h"
+#include "../clibalgserver/rapidjson/document.h"
+#include "../clibalgserver/rapidjson/writer.h"
+#include "../clibalgserver/rapidjson/stringbuffer.h"
+#include "../clibalgserver/rapidjson/error/en.h"
 
 #ifdef REPORT_ERROR
 #undef REPORT_ERROR
@@ -263,7 +267,7 @@ namespace clib {
             }
             else if (cycle_stable > 0) {
                 if (fps > GUI_MAX_FPS_RATE) {
-                    cycle = min(cycle << 1, GUI_MAX_CYCLE);
+                    cycle = __min(cycle << 1, GUI_MAX_CYCLE);
                 }
                 else if (fps < GUI_MIN_FPS_RATE) {
                     cycle_stable--;
@@ -271,8 +275,8 @@ namespace clib {
             }
             else if (fps > GUI_MAX_FPS_RATE) {
                 if (cycle_speed >= 0) {
-                    cycle_speed = min(cycle_speed + 1, GUI_MAX_SPEED);
-                    cycle = min(cycle << cycle_speed, GUI_MAX_CYCLE);
+                    cycle_speed = __min(cycle_speed + 1, GUI_MAX_SPEED);
+                    cycle = __min(cycle << cycle_speed, GUI_MAX_CYCLE);
                 }
                 else {
                     cycle_speed = 0;
@@ -280,8 +284,8 @@ namespace clib {
             }
             else if (fps < GUI_MIN_FPS_RATE) {
                 if (cycle_speed <= 0) {
-                    cycle_speed = max(cycle_speed - 1, -GUI_MAX_SPEED);
-                    cycle = max(cycle >> (-cycle_speed), GUI_MIN_CYCLE);
+                    cycle_speed = __max(cycle_speed - 1, -GUI_MAX_SPEED);
+                    cycle = __max(cycle >> (-cycle_speed), GUI_MIN_CYCLE);
                 }
                 else {
                     cycle_speed = 0;
@@ -613,8 +617,8 @@ namespace clib {
         }
         auto old_rows = rows;
         auto old_cols = cols;
-        rows = max(10, min(r, 60));
-        cols = max(20, min(c, 200));
+        rows = __max(10, __min(r, 60));
+        cols = __max(20, __min(c, 200));
         ATLTRACE("[SYSTEM] GUI  | Resize: from (%d, %d) to (%d, %d)\n", old_rows, old_cols, rows, cols);
         size = rows * cols;
         auto old_buffer = buffer;
@@ -635,8 +639,8 @@ namespace clib {
         if (!colors_fg)
             error("gui memory overflow");
         std::fill(colors_fg, colors_fg + size, MAKE_RGB(255, 255, 255));
-        auto min_rows = min(old_rows, rows);
-        auto min_cols = min(old_cols, cols);
+        auto min_rows = __min(old_rows, rows);
+        auto min_cols = __min(old_cols, cols);
         auto delta_rows = old_rows - min_rows;
         for (int i = 0; i < min_rows; ++i) {
             for (int j = 0; j < min_cols; ++j) {
@@ -645,12 +649,12 @@ namespace clib {
                 colors_fg[i * cols + j] = old_fg[(delta_rows + i) * old_cols + j];
             }
         }
-        ptr_x = min(ptr_x, cols);
-        ptr_y = min(ptr_y, rows);
-        ptr_mx = min(ptr_mx, cols);
-        ptr_my = min(ptr_my, rows);
-        ptr_rx = min(ptr_rx, cols);
-        ptr_ry = min(ptr_ry, rows);
+        ptr_x = __min(ptr_x, cols);
+        ptr_y = __min(ptr_y, rows);
+        ptr_mx = __min(ptr_mx, cols);
+        ptr_my = __min(ptr_my, rows);
+        ptr_rx = __min(ptr_rx, cols);
+        ptr_ry = __min(ptr_ry, rows);
         memory.free(old_buffer);
         memory.free(old_fg);
         memory.free(old_bg);
@@ -1246,5 +1250,64 @@ namespace clib {
             ss << std::endl;
         }
         return ss.str();
+    }
+
+    std::string cgui::tracer_json() const
+    {
+        using namespace rapidjson;
+        Document d;
+        auto& allocator = d.GetAllocator();
+        d.SetObject();
+        d.AddMember("code", Value(200), allocator);
+        enum trace_type {
+            T_CHAR,
+            T_INT,
+        };
+        Value arr(kArrayType);
+        for (const auto& r : trace_records) {
+            Value obj(kObjectType);
+            auto method = StringRef("method");
+            auto type = StringRef("type");
+            auto value = StringRef("value");
+            if (r.method == T_MESSAGE) {
+                obj.AddMember(method, "msg", allocator);
+                obj.AddMember(value, StringRef(r.message.c_str()), allocator);
+                arr.PushBack(obj, allocator);
+                continue;
+            }
+            obj.AddMember("name", StringRef(r.name.c_str()), allocator);
+            if (r.method == T_UPDATE)
+                obj.AddMember(method, "update", allocator);
+            else if (r.method == T_CREATE)
+                obj.AddMember(method, "create", allocator);
+            else if (r.method == T_DESTROY) {
+                obj.AddMember(method, "destroy", allocator);
+                arr.PushBack(obj, allocator);
+                continue;
+            }
+            if (r.type == T_INT) {
+                obj.AddMember(type, "int", allocator);
+                obj.AddMember(value, r.data._i, allocator);
+            }
+            else if (r.type == T_CHAR) {
+                obj.AddMember(type, "char", allocator);
+                obj.AddMember(value, r.data._c, allocator);
+            }
+            else
+                continue;
+            if (!r.loc.empty()) {
+                Value loc(kArrayType);
+                for (auto& l : r.loc) {
+                    loc.PushBack(Value(l), allocator);
+                }
+                obj.AddMember("loc", loc, allocator);
+            }
+            arr.PushBack(obj, allocator);
+        }
+        d.AddMember("data", arr, allocator);
+        StringBuffer buffer;
+        Writer<StringBuffer> writer(buffer);
+        d.Accept(writer);
+        return buffer.GetString();
     }
 }

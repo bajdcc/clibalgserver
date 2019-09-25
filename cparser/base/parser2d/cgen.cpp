@@ -401,7 +401,7 @@ namespace clib {
                 for (auto& decl : decls) {
                     decl->addr = 0;
                     auto s = decl->size(t, level);
-                    *const_cast<int*>(&_size) = max(_size, s);
+                    *const_cast<int*>(&_size) = __max(_size, s);
                     decl->addr_end = s;
                 }
             }
@@ -859,7 +859,7 @@ namespace clib {
             auto c = cast_size(size);
             gen.emit(PUSH, c);
             auto inc = exp->size(x_inc);
-            gen.emit(IMM, max(inc, 1));
+            gen.emit(IMM, __max(inc, 1));
             auto t = cast_find(t_int, size);
             if (t > 0)
                 gen.emit(CAST, t);
@@ -908,7 +908,7 @@ namespace clib {
             auto c = cast_size(size);
             gen.emit(PUSH, c);
             auto inc = exp->size(x_inc);
-            gen.emit(IMM, max(inc, 1));
+            gen.emit(IMM, __max(inc, 1));
             auto t = cast_find(t_int, size);
             if (t > 0)
                 gen.emit(CAST, t);
@@ -944,7 +944,7 @@ namespace clib {
             if (base->get_cast() != t_ptr)
                 gen.error(line, column, "invalid deref: " + to_string());
             base->ptr--;
-            gen.emit(LOAD, max(exp->size(x_inc), 1));
+            gen.emit(LOAD, __max(exp->size(x_inc), 1));
             break;
         default:
             gen.error(line, column, "[unop] not supported rvalue: " + to_string());
@@ -990,7 +990,7 @@ namespace clib {
             auto c = cast_size(size);
             gen.emit(PUSH, c);
             auto inc = exp->size(x_inc);
-            gen.emit(IMM, max(inc, 1));
+            gen.emit(IMM, __max(inc, 1));
             auto t = cast_find(t_int, size);
             if (t > 0)
                 gen.emit(CAST, t);
@@ -1020,7 +1020,7 @@ namespace clib {
             exp->gen_rvalue(gen);
             gen.emit(PUSH, c);
             auto inc = exp->size(x_inc);
-            gen.emit(IMM, max(inc, 1));
+            gen.emit(IMM, __max(inc, 1));
             auto t = cast_find(t_int, size);
             if (t > 0)
                 gen.emit(CAST, t);
@@ -1324,7 +1324,7 @@ namespace clib {
             exp2->gen_rvalue(gen);
             auto t1 = exp1->base->get_cast();
             auto t2 = exp2->base->get_cast();
-            if (!(t1 == t_ptr && t2 == t_ptr) && max(t1, t2) >= t_long) {
+            if (!(t1 == t_ptr && t2 == t_ptr) && __max(t1, t2) >= t_long) {
                 gen.error(line, column, "logical binop: unsupported cast, op= " + OP_STRING(op->data._op) +
                     ", exp1= " + exp1->to_string() +
                     ", exp2= " + exp2->to_string());
@@ -1375,7 +1375,7 @@ namespace clib {
     int sym_triop_t::size(sym_size_t t, int level) const {
         if (t == x_inc)
             return 0;
-        return max(max(exp1->size(t, level), exp2->size(t, level)), exp3->size(t, level));
+        return __max(__max(exp1->size(t, level), exp2->size(t, level)), exp3->size(t, level));
     }
 
     string_t sym_triop_t::get_name() const {

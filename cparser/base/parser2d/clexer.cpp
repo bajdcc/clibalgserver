@@ -979,7 +979,7 @@ LEX_T(t) clexer::get_store_##t(int index) const \
             if (len == 1) {
                 sinOp[op[0]] = (operator_t)i; // 操作符第一位char映射
             }
-            len = min(len, 2);
+            len = __min(len, 2);
             for (auto j = 0; j < len; j++) {
                 bitOp[j].set((uint)op[j]); // 操作符第一/二位char二进制查找
             }

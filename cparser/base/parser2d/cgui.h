@@ -72,6 +72,7 @@ namespace clib {
         bool is_running() const;
         std::string output() const;
         std::string tracer() const;
+        std::string tracer_json() const;
 
     private:
         void reset_ips();
