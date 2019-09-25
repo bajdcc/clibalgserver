@@ -211,9 +211,22 @@ namespace clib {
         return false;
     }
 
+    int trace_type_str(int n) {
+        enum trace_type {
+            T_CHAR,
+            T_INT,
+        };
+        static int type_str[] = {
+            1,
+            4
+        };
+        if (n < 0 || n >= sizeof(type_str) / sizeof(int))
+            return 1;
+        return type_str[n];
+    }
+
     template<class T>
     T cvm::vmm_set(uint32_t va, T value) {
-
         enum trace_type {
             T_CHAR,
             T_INT,
@@ -229,6 +242,7 @@ namespace clib {
             for (const auto& b : ctx->breakpoints) {
                 const auto& bp = b.second;
                 if (va >= bp.addr_start && va < bp.addr_end) {
+                    auto n = bp.matrix.size();
                     cgui::trace_record record;
                     record.name = b.first;
                     record.type = bp.type;
@@ -241,6 +255,10 @@ namespace clib {
                         break;
                     default:
                         break;
+                    }
+                    if (n == 1) {
+                        auto n = trace_type_str(bp.type);
+                        record.loc.push_back((va - bp.addr_start) / n);
                     }
                     gui->trace_records.push_back(record);
                     break;
@@ -2464,9 +2482,7 @@ namespace clib {
             break;
         case 202:
         {
-            std::default_random_engine e((uint32_t)time(nullptr));
-            std::uniform_int_distribution<int> dist{ 0, std::abs(ctx->ax._i) };
-            ctx->ax._i = dist(e);
+            ctx->ax._i = rand();
         }
         break;
         default:
@@ -2478,20 +2494,6 @@ namespace clib {
         }
         ctx->pc += INC_PTR;
         return false;
-    }
-
-    int trace_type_str(int n) {
-        enum trace_type {
-            T_CHAR,
-            T_INT,
-        };
-        static int type_str[] = {
-            1,
-            4
-        };
-        if (n < 0 || n >= sizeof(type_str) / sizeof(int))
-            return 1;
-        return type_str[n];
     }
 
     bool cvm::tracer(int id) {
@@ -2512,6 +2514,25 @@ namespace clib {
             ctx->breakpoints.insert(std::make_pair(name, bp));
         }
             break;
+        case 302:
+        {
+            struct __trace_1d__ {
+                uint32 name;
+                uint32 arr;
+                int type;
+                int cols;
+            };
+            auto s = vmm_get<__trace_1d__>(ctx->ax._ui);
+            s.cols = __max(s.cols, 1);
+            breakpoint bp;
+            auto name = vmm_getstr(s.name);
+            bp.addr_start = s.arr;
+            bp.addr_end = s.arr + trace_type_str(s.type) * s.cols;
+            bp.type = s.type;
+            bp.matrix.push_back(s.cols);
+            ctx->breakpoints.insert(std::make_pair(name, bp));
+        }
+        break;
         case 304:
         {
             auto s = vmm_getstr(ctx->ax._ui);

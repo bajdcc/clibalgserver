@@ -32,6 +32,7 @@
                         <label class="layui-form-label">链接</label>
                         <div class="layui-input-block">
                             <a href="/">首页</a>
+                            <a href="#" @click="test_1d">测试一维数组</a>
                         </div>
                     </div>
                     <div class="layui-form-item">
@@ -92,6 +93,13 @@
                             _this.toutput = e.responseText;
                         });
                     },
+                    test_1d: function() {
+                        $.get("example/test_1d.cpp", function(d) {
+                            editor.setValue(d);
+                        }).error(function() {
+                            editor.setValue("// 加载出现错误");
+                        });
+                    }
                 }
             });
             var editor = ace.edit("editor");
@@ -105,15 +113,11 @@
                 enableSnippets: true,
                 enableLiveAutocompletion: true
             });
-            editor.setValue("#include \"/include/io\"\n#include \"/include/trace\"\n" +
-                "int main(int argc, char** argv) {\n" +
-                "    int a = 0;\n" +
-                "    trace_var(\"a\", &a, T_INT);\n" +
-                "    a = 1;\n" +
-                "    a++;\n" +
-                "    a -= 2;\n" +
-                "    trace_end(\"a\");\n" +
-                "}");
+            $.get("example/test_var.cpp", function(d) {
+                editor.setValue(d);
+            }).error(function() {
+                editor.setValue("// 加载出现错误");
+            });
         });
     </script>
 </body>

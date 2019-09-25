@@ -102,11 +102,11 @@ namespace clib {
         friend class cvm;
         struct trace_record {
             std::string name;
-            int type;
+            int type{ 0 };
             std::vector<int> loc;
             union {
                 char _c;
-                int _i;
+                int _i{ 0 };
             } data;
         };
         std::vector<trace_record> trace_records;

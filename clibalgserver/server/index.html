@@ -105,7 +105,11 @@
                 enableSnippets: true,
                 enableLiveAutocompletion: true
             });
-            editor.setValue("#include \"/include/io\"\nint main(int argc, char** argv) {\n    put_string(\"Hello world!\");\n}");
+            $.get("example/test_var.cpp", function(d) {
+                editor.setValue(d);
+            }).error(function() {
+                editor.setValue("// 加载出现错误");
+            });
         });
     </script>
 </body>

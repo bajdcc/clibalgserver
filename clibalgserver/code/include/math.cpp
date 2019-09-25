@@ -8,3 +8,7 @@ double sqrt(double number) {
     number;
     interrupt 201;
 }
+
+int rand() {
+    interrupt 202;
+}

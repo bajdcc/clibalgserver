@@ -28,6 +28,7 @@ namespace clib {
         std::make_tuple("cmx", "image/x-cmx"),
         std::make_tuple("cod", "image/cis-cod"),
         std::make_tuple("cpio", "application/x-cpio"),
+        std::make_tuple("cpp", "text/plain"),
         std::make_tuple("crd", "application/x-mscardfile"),
         std::make_tuple("crl", "application/pkix-crl"),
         std::make_tuple("crt", "application/x-x509-ca-cert"),

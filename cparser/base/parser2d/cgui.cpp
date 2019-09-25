@@ -1213,13 +1213,19 @@ namespace clib {
         std::stringstream ss;
         char sz[256];
         for (const auto& r : trace_records) {
+            ss << "Name: " << r.name << ", ";
             if (r.type == T_INT)
-                snprintf(sz, sizeof(sz), "Name: %s, Type: int, Value: %d", r.name.c_str(), r.data._i);
+                snprintf(sz, sizeof(sz), "Type: int, Value: %d", r.data._i);
             else if (r.type == T_CHAR)
-                snprintf(sz, sizeof(sz), "Name: %s, Type: char, Value: %c", r.name.c_str(), r.data._c);
+                snprintf(sz, sizeof(sz), "Type: char, Value: %c", r.data._c);
             else
                 continue;
-            ss << sz << std::endl;
+            ss << sz;
+            if (!r.loc.empty()) {
+                snprintf(sz, sizeof(sz), ", Index: %d", r.loc[0]);
+                ss << sz;
+            }
+            ss << std::endl;
         }
         return ss.str();
     }

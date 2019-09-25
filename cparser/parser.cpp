@@ -42,6 +42,9 @@ namespace clib {
         }
         auto run = gui.is_running();
         output = gui.tracer();
+        if (output.empty()) {
+            output = gui.output();
+        }
         gui.reset();
         if (run)
             output += "\n[ERROR] Running time out.";

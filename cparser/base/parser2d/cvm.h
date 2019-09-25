@@ -182,8 +182,8 @@ namespace clib {
         static const char* state_string(ctx_state_t);
 
         struct breakpoint {
-            int type;
-            uint32 addr_start, addr_end;
+            int type{ 0 };
+            uint32 addr_start{ 0 }, addr_end{ 0 };
             std::vector<int> matrix;
         };
 
