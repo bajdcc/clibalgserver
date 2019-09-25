@@ -1213,6 +1213,10 @@ namespace clib {
         std::stringstream ss;
         char sz[256];
         for (const auto& r : trace_records) {
+            if (r.method == T_MESSAGE) {
+                ss << "Message: " << r.message << std::endl;
+                continue;
+            }
             ss << "Name: " << r.name << ", ";
             if (r.method == T_UPDATE)
                 ss << " Method: Update, ";

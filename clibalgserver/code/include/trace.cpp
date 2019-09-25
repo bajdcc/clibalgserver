@@ -5,7 +5,8 @@
 
 // 控制台输出
 void trace_log(char* text) {
-
+    text;
+    interrupt 305;
 }
 
 // 支持的追踪类型

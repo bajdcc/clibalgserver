@@ -2585,6 +2585,15 @@ namespace clib {
             }
         }
         break;
+        case 305:
+        {
+            auto s = vmm_getstr(ctx->ax._ui);
+            cgui::trace_record record;
+            record.method = cgui::T_MESSAGE;
+            record.message = s;
+            gui->trace_records.push_back(record);
+        }
+        break;
         default:
 #if LOG_SYSTEM
             ATLTRACE("[SYSTEM] ERR  | unknown interrupt: %d\n", ctx->ax._i);

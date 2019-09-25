@@ -9,6 +9,7 @@ void swap(int* a, int* b) {
 int main(int argc, char** argv) {
     int a[10], i, j;
 	int n = sizeof(a) / sizeof(int);
+    trace_log("一维数组修改示例");
     trace_array_1d("a", &a, T_INT, n);
     for (i = 0; i < n; i++)
         a[i] = rand() % 9 + 1;

@@ -101,6 +101,7 @@ namespace clib {
     private:
         friend class cvm;
         enum trace_method {
+            T_MESSAGE,
             T_UPDATE,
             T_CREATE,
             T_DESTROY,
@@ -110,6 +111,7 @@ namespace clib {
             T_INT,
         };
         struct trace_record {
+            std::string message;
             int method{ 0 };
             std::string name;
             int type{ 0 };
