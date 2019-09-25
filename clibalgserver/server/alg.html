@@ -10,19 +10,13 @@
     <link rel="stylesheet" href="/layui/css/layui.css" media="all">
     <link rel="stylesheet" href="/css/layx.min.css" media="all">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-    <style>
-        #editor {
-            width: 600px;
-            height: 300px;
-        }
-    </style>
     <title>clibalgserver</title>
 </head>
 
 <body>
     <div class="layui-container" id="app" style="background-color: white">
         <div class="layui-row">
-            <div class="layui-col-xs8">
+            <div class="layui-col-xs16">
                 <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
                     <legend>算法可视化</legend>
                 </fieldset>
@@ -36,15 +30,17 @@
                         </div>
                     </div>
                     <div class="layui-form-item">
-                        <label class="layui-form-label">输入代码</label>
-                        <div class="layui-input-block">
-                            <div id="editor"></div>
+                        <div>
+                            <label class="layui-form-label">输入代码</label>
+                            <div class="layui-input-inline" style="width:500px;height:500px">
+                                <div id="editor" style="width:500px;height:500px"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">输出结果</label>
-                        <div class="layui-input-block">
-                            <textarea placeholder="输出结果" readonly class="layui-textarea" v-model="toutput"></textarea>
+                        <div>
+                            <label class="layui-form-label">输出结果</label>
+                            <div class="layui-input-inline" style="width:300px;height:500px">
+                                <textarea placeholder="输出结果" readonly class="layui-textarea" v-model="toutput" rows="20"></textarea>
+                            </div>
                         </div>
                     </div>
                     <div class="layui-form-item">
