@@ -1214,6 +1214,14 @@ namespace clib {
         char sz[256];
         for (const auto& r : trace_records) {
             ss << "Name: " << r.name << ", ";
+            if (r.method == T_UPDATE)
+                ss << " Method: Update, ";
+            else if (r.method == T_CREATE)
+                ss << " Method: Create, ";
+            else if (r.method == T_DESTROY) {
+                ss << " Method: Destroy" << std::endl;
+                continue;
+            }
             if (r.type == T_INT)
                 snprintf(sz, sizeof(sz), "Type: int, Value: %d", r.data._i);
             else if (r.type == T_CHAR)

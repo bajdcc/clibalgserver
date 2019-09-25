@@ -100,7 +100,17 @@ namespace clib {
 
     private:
         friend class cvm;
+        enum trace_method {
+            T_UPDATE,
+            T_CREATE,
+            T_DESTROY,
+        };
+        enum trace_type {
+            T_CHAR,
+            T_INT,
+        };
         struct trace_record {
+            int method{ 0 };
             std::string name;
             int type{ 0 };
             std::vector<int> loc;

@@ -212,10 +212,6 @@ namespace clib {
     }
 
     int trace_type_str(int n) {
-        enum trace_type {
-            T_CHAR,
-            T_INT,
-        };
         static int type_str[] = {
             1,
             4
@@ -227,10 +223,6 @@ namespace clib {
 
     template<class T>
     T cvm::vmm_set(uint32_t va, T value) {
-        enum trace_type {
-            T_CHAR,
-            T_INT,
-        };
         if (!(ctx->flag & CTX_KERNEL)) {
             if ((ctx->flag & CTX_USER_MODE) && (va & 0xF0000000) == USER_BASE) {
                 error("code segment cannot be written");
@@ -244,13 +236,14 @@ namespace clib {
                 if (va >= bp.addr_start && va < bp.addr_end) {
                     auto n = bp.matrix.size();
                     cgui::trace_record record;
+                    record.method = cgui::T_UPDATE;
                     record.name = b.first;
                     record.type = bp.type;
                     switch (bp.type) {
-                    case T_CHAR:
+                    case cgui::T_CHAR:
                         record.data._c = (char)(((uint32)value) & 0xff);
                         break;
-                    case T_INT:
+                    case cgui::T_INT:
                         record.data._i = (int)(((uint32)value) & 0xffffffff);
                         break;
                     default:
@@ -2518,6 +2511,11 @@ namespace clib {
             bp.addr_end = s.arr + trace_type_str(s.type);
             bp.type = s.type;
             ctx->breakpoints.insert(std::make_pair(name, bp));
+            cgui::trace_record record;
+            record.method = cgui::T_CREATE;
+            record.name = name;
+            record.type = s.type;
+            gui->trace_records.push_back(record);
         }
             break;
         case 302:
@@ -2537,6 +2535,12 @@ namespace clib {
             bp.type = s.type;
             bp.matrix.push_back(s.cols);
             ctx->breakpoints.insert(std::make_pair(name, bp));
+            cgui::trace_record record;
+            record.method = cgui::T_CREATE;
+            record.name = name;
+            record.type = s.type;
+            record.loc.push_back(s.cols);
+            gui->trace_records.push_back(record);
         }
         break;
         case 303:
@@ -2558,12 +2562,27 @@ namespace clib {
             bp.matrix.push_back(s.rows);
             bp.matrix.push_back(s.cols);
             ctx->breakpoints.insert(std::make_pair(name, bp));
+            cgui::trace_record record;
+            record.method = cgui::T_CREATE;
+            record.name = name;
+            record.type = s.type;
+            record.loc.push_back(s.rows);
+            record.loc.push_back(s.cols);
+            gui->trace_records.push_back(record);
         }
         break;
         case 304:
         {
             auto s = vmm_getstr(ctx->ax._ui);
-            ctx->breakpoints.erase(s);
+            auto f = ctx->breakpoints.find(s);
+            if (f != ctx->breakpoints.end()) {
+                cgui::trace_record record;
+                record.method = cgui::T_DESTROY;
+                record.name = s;
+                record.type = f->second.type;
+                gui->trace_records.push_back(record);
+                ctx->breakpoints.erase(s);
+            }
         }
         break;
         default:
