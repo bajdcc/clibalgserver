@@ -1222,7 +1222,13 @@ namespace clib {
                 continue;
             ss << sz;
             if (!r.loc.empty()) {
-                snprintf(sz, sizeof(sz), ", Index: %d", r.loc[0]);
+                auto N = r.loc.size();
+                if (N == 1) {
+                    snprintf(sz, sizeof(sz), ", Index: %d", r.loc[0]);
+                }
+                else if (N == 2) {
+                    snprintf(sz, sizeof(sz), ", Index: %d,%d", r.loc[0], r.loc[1]);
+                }
                 ss << sz;
             }
             ss << std::endl;

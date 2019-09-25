@@ -787,8 +787,10 @@ namespace clib {
     }
 
     gen_t sym_cast_t::gen_lvalue(igen & gen) {
-        gen.error(line, column, "cast: unsupported lvalue");
-        return g_error;
+        exp->gen_rvalue(gen);
+        if (exp->base->get_cast() != t_ptr)
+            gen.error(line, column, "cast: unsupported lvalue");
+        return g_no_load;
     }
 
     gen_t sym_cast_t::gen_rvalue(igen & gen) {
@@ -1073,8 +1075,11 @@ namespace clib {
             if (size != t_ptr)
                 gen.error(line, column, "invalid address by []: " + exp1->base->to_string());
             base->ptr--;
+            auto L = 1;
             if (!base->matrix.empty()) {
-                base->matrix.pop_back();
+                base->matrix.erase(base->matrix.begin());
+                for (auto& m : base->matrix)
+                    L *= m;
             }
             gen.emit(PUSH, c); // 压入数组地址
             exp2->gen_rvalue(gen); // index
@@ -1083,7 +1088,7 @@ namespace clib {
             auto n = exp1->size(x_inc);
             if (n > 1) {
                 gen.emit(PUSH, c);
-                gen.emit(IMM, n);
+                gen.emit(IMM, n * L);
                 gen.emit(MUL, size);
                 gen.emit(ADD, size);
             }
@@ -2735,7 +2740,7 @@ namespace clib {
             if (AST_IS_KEYWORD_N(asts[0], k_case)) {
                 cases.back().at(asts[0])._case = to_exp(tmp.back().front());
 #if LOG_TYPE
-                log_out << "[DEBUG] Case: " << cases.back().back()._case->to_string() << std::endl;
+                log_out << "[DEBUG] Case: " << cases.back().at(asts[0])._case->to_string() << std::endl;
 #endif
             }
             else if (AST_IS_KEYWORD_N(asts[0], k_default)) {

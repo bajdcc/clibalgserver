@@ -260,6 +260,12 @@ namespace clib {
                         auto n = trace_type_str(bp.type);
                         record.loc.push_back((va - bp.addr_start) / n);
                     }
+                    else if (n == 2) {
+                        auto n = trace_type_str(bp.type);
+                        auto L = (va - bp.addr_start) / n;
+                        record.loc.push_back(L / bp.matrix[1]);
+                        record.loc.push_back(L % bp.matrix[1]);
+                    }
                     gui->trace_records.push_back(record);
                     break;
                 }
@@ -2529,6 +2535,27 @@ namespace clib {
             bp.addr_start = s.arr;
             bp.addr_end = s.arr + trace_type_str(s.type) * s.cols;
             bp.type = s.type;
+            bp.matrix.push_back(s.cols);
+            ctx->breakpoints.insert(std::make_pair(name, bp));
+        }
+        break;
+        case 303:
+        {
+            struct __trace_2d__ {
+                uint32 name;
+                uint32 arr;
+                int type;
+                int rows;
+                int cols;
+            };
+            auto s = vmm_get<__trace_2d__>(ctx->ax._ui);
+            s.cols = __max(s.cols, 1);
+            breakpoint bp;
+            auto name = vmm_getstr(s.name);
+            bp.addr_start = s.arr;
+            bp.addr_end = s.arr + trace_type_str(s.type) * s.rows * s.cols;
+            bp.type = s.type;
+            bp.matrix.push_back(s.rows);
             bp.matrix.push_back(s.cols);
             ctx->breakpoints.insert(std::make_pair(name, bp));
         }

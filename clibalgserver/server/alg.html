@@ -26,7 +26,9 @@
                         <label class="layui-form-label">链接</label>
                         <div class="layui-input-block">
                             <a href="/">首页</a>
-                            <a href="#" @click="test_1d">测试一维数组</a>
+                            <a href="#" @click="test('test_var')">测试变量</a>
+                            <a href="#" @click="test('test_1d')">测试一维数组</a>
+                            <a href="#" @click="test('test_2d')">测试二维数组</a>
                         </div>
                     </div>
                     <div class="layui-form-item">
@@ -61,6 +63,13 @@
     <script type="text/javascript" src="ace/ext-language_tools.js" charset="utf-8"></script>
     <script type="text/javascript">
         $(document).ready(function() {
+            function load_text(url) {
+                $.get(url, function(d) {
+                    editor.setValue(d);
+                }).error(function() {
+                    editor.setValue("// 加载出现错误");
+                });
+            }
             var app = new Vue({
                 el: '#app',
                 data: {
@@ -89,12 +98,8 @@
                             _this.toutput = e.responseText;
                         });
                     },
-                    test_1d: function() {
-                        $.get("example/test_1d.cpp", function(d) {
-                            editor.setValue(d);
-                        }).error(function() {
-                            editor.setValue("// 加载出现错误");
-                        });
+                    test: function(t) {
+                        load_text("example/" + t + ".cpp");
                     }
                 }
             });
@@ -109,11 +114,7 @@
                 enableSnippets: true,
                 enableLiveAutocompletion: true
             });
-            $.get("example/test_var.cpp", function(d) {
-                editor.setValue(d);
-            }).error(function() {
-                editor.setValue("// 加载出现错误");
-            });
+            load_text("example/test_var.cpp");
         });
     </script>
 </body>
