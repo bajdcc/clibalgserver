@@ -158,6 +158,7 @@
                                     },
                                     methods: {
                                         read_next_ins: function() {
+
                                             if (this.current > 0) {
                                                 var cur = this.current - 1;
                                                 var ins = this.step[cur];
@@ -233,8 +234,8 @@
                                                     var value = ins.value;
                                                     if (!$("#" + name).length) {
                                                         if (!ins.loc) {
-                                                            var ctx = '<div id="' + name + '-app" class="layui-form" style="padding:5px;">' +
-                                                                '{{value}}' +
+                                                            var ctx = '<div id="' + name + '-app" style="padding:5px;text-align:center">' +
+                                                                '<button type="button" class="layui-btn layui-btn-primary">{{value}}</button>' +
                                                                 '</div>';
                                                             var L = layer.open({
                                                                 type: 1,
@@ -253,20 +254,31 @@
                                                                     var app = new Vue({
                                                                         el: "#" + name + "-app",
                                                                         data: {
-                                                                            value: ""
+                                                                            value: "",
+                                                                            focus: false
                                                                         },
                                                                         methods: {}
                                                                     });
                                                                     eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                        $("#" + name + "-app > button").css("background-color", "#1E9FFF");
                                                                         app.value = data.value;
+                                                                        app.focus = true;
                                                                     });
                                                                     eventBus.on("close-" + oname, function(sender, data, obj) {
                                                                         layer.close(L);
                                                                     });
+                                                                    this.lost_focus = function(sender, data, obj) {
+                                                                        if (app.focus) {
+                                                                            $("#" + name + "-app > button").css("background-color", "");
+                                                                            app.focus = false;
+                                                                        }
+                                                                    };
+                                                                    eventBus.on("lost_focus", this.lost_focus);
                                                                 },
                                                                 end: function() {
                                                                     eventBus.off("modify-" + oname);
                                                                     eventBus.off("close-" + oname);
+                                                                    eventBus.off("lost_focus", this.lost_focus);
                                                                 }
                                                             });
                                                             eventBus.on("close", function(sender, data, obj) {
@@ -277,7 +289,7 @@
                                                             for (var jj = 0; jj < ins.loc[0]; jj++) {
                                                                 headers.push({
                                                                     key: jj,
-                                                                    value: ""
+                                                                    value: "-"
                                                                 });
                                                             }
                                                             var ctx = '<div id="' + name + '-app" class="layui-form" style="padding:5px;">' +
@@ -287,12 +299,12 @@
                                                                 '    </colgroup>' +
                                                                 '    <thead>' +
                                                                 '      <tr>' +
-                                                                '        <th v-for="header in headers">{{header.key}}</th>' +
-                                                                '      </tr> ' +
+                                                                '        <th v-for="header in headers" style="text-align:center;background-color:#fff;">{{header.key}}</th>' +
+                                                                '      </tr>' +
                                                                 '    </thead>' +
                                                                 '    <tbody>' +
                                                                 '      <tr>' +
-                                                                '        <td v-for="header in headers">{{header.value}}</td>' +
+                                                                '        <td v-for="header in headers" style="text-align:center;background-color:#f2f2f2;font-weight:bold">{{header.value}}</td>' +
                                                                 '      </tr>' +
                                                                 '    </tbody>' +
                                                                 '  </table>' +
@@ -314,11 +326,14 @@
                                                                     var app = new Vue({
                                                                         el: "#" + name + "-app",
                                                                         data: {
-                                                                            headers: headers
+                                                                            headers: headers,
+                                                                            focus: null
                                                                         },
                                                                         methods: {}
                                                                     });
                                                                     eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                        app.focus = data.loc;
+                                                                        $("#" + name + "-app > table > tbody > tr > td:nth(" + (data.loc[0]) + ")").css("background-color", "#1E9FFF");
                                                                         app.$set(app.headers, data.loc[0], {
                                                                             key: data.loc[0],
                                                                             value: data.value
@@ -327,17 +342,101 @@
                                                                     eventBus.on("close-" + oname, function(sender, data, obj) {
                                                                         layer.close(L);
                                                                     });
+                                                                    this.lost_focus = function(sender, data, obj) {
+                                                                        if (app.focus) {
+                                                                            $("#" + name + "-app > table > tbody > tr > td:nth(" + (app.focus[0]) + ")").css("background-color", "#f2f2f2");
+                                                                            app.focus = null;
+                                                                        }
+                                                                    };
+                                                                    eventBus.on("lost_focus", this.lost_focus);
                                                                 },
                                                                 end: function() {
                                                                     eventBus.off("modify-" + oname);
                                                                     eventBus.off("close-" + oname);
+                                                                    eventBus.off("lost_focus", this.lost_focus);
                                                                 }
                                                             });
                                                             eventBus.on("close", function(sender, data, obj) {
                                                                 layer.close(L);
                                                             });
                                                         } else if (ins.loc.length == 2) {
-
+                                                            var headers = [];
+                                                            for (var jj = 0; jj < ins.loc[1]; jj++) {
+                                                                headers.push(jj);
+                                                            }
+                                                            var datas = [];
+                                                            for (var jj = 0; jj < ins.loc[0]; jj++) {
+                                                                var arr = [];
+                                                                for (var kk = 0; kk < ins.loc[1]; kk++) {
+                                                                    arr.push("-");
+                                                                }
+                                                                datas.push(arr);
+                                                            }
+                                                            var ctx = '<div id="' + name + '-app" class="layui-form" style="padding:5px;">' +
+                                                                '  <table class="layui-table">' +
+                                                                '    <colgroup>' +
+                                                                '      <col v-for="header in headers">' +
+                                                                '    </colgroup>' +
+                                                                '    <thead>' +
+                                                                '      <tr>' +
+                                                                '        <th v-for="header in headers" style="text-align:center;background-color:#fff;">{{header}}</th>' +
+                                                                '      </tr>' +
+                                                                '    </thead>' +
+                                                                '    <tbody>' +
+                                                                '      <tr v-for="rows in datas">' +
+                                                                '        <td v-for="row in rows" style="text-align:center;background-color:#f2f2f2;font-weight:bold">{{row}}</td>' +
+                                                                '      </tr>' +
+                                                                '    </tbody>' +
+                                                                '  </table>' +
+                                                                '</div>';
+                                                            var L = layer.open({
+                                                                type: 1,
+                                                                offset: ['400px', '50px'],
+                                                                id: name,
+                                                                title: '二维数组跟踪：' + oname,
+                                                                content: ctx,
+                                                                shade: false,
+                                                                shadeClose: false,
+                                                                closeBtn: false,
+                                                                fixed: true,
+                                                                resize: false,
+                                                                scrollbar: false,
+                                                                success: function() {
+                                                                    $("#" + name + "-app").parent().css('overflow', 'hidden');
+                                                                    var app = new Vue({
+                                                                        el: "#" + name + "-app",
+                                                                        data: {
+                                                                            headers: headers,
+                                                                            datas: datas,
+                                                                            focus: null
+                                                                        },
+                                                                        methods: {}
+                                                                    });
+                                                                    eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                        app.focus = data.loc;
+                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + (data.loc[0]) + ") > td:nth(" + (data.loc[1]) + ")").css("background-color", "#1E9FFF");
+                                                                        app.$set(app.datas[data.loc[0]], data.loc[1], data.value);
+                                                                    });
+                                                                    eventBus.on("close-" + oname, function(sender, data, obj) {
+                                                                        layer.close(L);
+                                                                    });
+                                                                    this.lost_focus = function(sender, data, obj) {
+                                                                        if (app.focus) {
+                                                                            $("#" + name + "-app > table > tbody > tr:nth(" + (app.focus[0]) + ") > td:nth(" + (app.focus[1]) + ")").css("background-color", "#f2f2f2");
+                                                                            app.focus = null;
+                                                                        }
+                                                                    };
+                                                                    eventBus.on("lost_focus", this.lost_focus);
+                                                                },
+                                                                end: function() {
+                                                                    eventBus.off("modify-" + oname);
+                                                                    eventBus.off("close-" + oname);
+                                                                    eventBus.off("lost_focus", this.lost_focus);
+                                                                }
+                                                            });
+                                                            eventBus.on("close", function(sender, data, obj) {
+                                                                layer.close(L);
+                                                            });
                                                         } else {
                                                             layer.msg("错误：不支持二维以上数组");
                                                         }
@@ -416,10 +515,12 @@
                                 });
                             },
                             yes: function() {
-                                if (this.app.current < this.app.total)
+                                if (this.app.current < this.app.total) {
+                                    eventBus.emit("lost_focus", this.app, {});
                                     eventBus.emit("progress", this.app, {
                                         i: this.app.current + 1
                                     });
+                                }
                             },
                             btn2: function() {
                                 var id = setInterval(this.yes.bind(this), 400);
@@ -440,6 +541,7 @@
                                 eventBus.emit("close", window, {});
                                 eventBus.emit("close_all", window, {});
                                 eventBus.offAll();
+                                return false;
                             }
                         });
                     }
