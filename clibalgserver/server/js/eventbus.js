@@ -70,6 +70,9 @@
                 }
             }
         }
+        this.offAll = function(eventName, fn) {
+            handers = {};
+        }
         this.fire = this.emit = this.trigger =
             function(eventName, sender, data) {
                 eventName = str(eventName);

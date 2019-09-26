@@ -1299,11 +1299,13 @@ namespace clib {
             }
             if (r.type == T_INT) {
                 obj.AddMember(type, "int", allocator);
-                obj.AddMember(value, r.data._i, allocator);
+                if (r.method == T_UPDATE)
+                    obj.AddMember(value, r.data._i, allocator);
             }
             else if (r.type == T_CHAR) {
                 obj.AddMember(type, "char", allocator);
-                obj.AddMember(value, r.data._c, allocator);
+                if (r.method == T_UPDATE)
+                    obj.AddMember(value, r.data._c, allocator);
             }
             else
                 continue;

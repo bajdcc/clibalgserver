@@ -134,10 +134,9 @@
                         pro += '<div class="layui-progress layui-progress-big" lay-filter="step-pro" lay-showpercent="true"><div class="layui-progress-bar" lay-percent="0%"></div></div>';
                         pro += '<br><p>当前操作：</p><br><p>{{curop}}</p>';
                         var cnt = '<div style="margin: 15px;" id="step">' + pro + '</div>';
-                        layer.open({
+                        var LTOP = layer.open({
                             type: 1,
                             offset: ['50px', '50px'],
-                            area: ['250px', '300px'],
                             id: 'step',
                             title: '算法步骤',
                             content: cnt,
@@ -145,7 +144,7 @@
                             closeBtn: false,
                             fixed: true,
                             resize: false,
-                            btn: ['继续', '重置', '结束'],
+                            btn: ['继续', '自动', '重置', '结束'],
                             btnAlign: 'c',
                             scrollbar: false,
                             success: function() {
@@ -184,10 +183,9 @@
                                                             '    </tbody>' +
                                                             '  </table>' +
                                                             '</div>';
-                                                        layer.open({
+                                                        var L = layer.open({
                                                             type: 1,
                                                             offset: ['50px', '400px'],
-                                                            area: ['250px', '300px'],
                                                             id: 'console',
                                                             title: '输出',
                                                             content: ctx,
@@ -218,15 +216,155 @@
                                                                     console_id++;
                                                                 });
                                                                 eventBus.emit("send-text", window, ins.value);
+                                                            },
+                                                            end: function() {
+                                                                eventBus.off("send-text");
                                                             }
                                                         });
                                                         eventBus.on("close", function(sender, data, obj) {
-                                                            layer.close();
+                                                            layer.close(L);
                                                         });
                                                     } else {
                                                         eventBus.emit("send-text", window, ins.value);
                                                     }
-                                                } else if (ins.method == "create") {} else if (ins.method == "update") {} else if (ins.method == "destroy") {} else {}
+                                                } else if (ins.method == "create") {
+                                                    var oname = ins.name;
+                                                    var name = 'trace__' + ins.name;
+                                                    var value = ins.value;
+                                                    if (!$("#" + name).length) {
+                                                        if (!ins.loc) {
+                                                            var ctx = '<div id="' + name + '-app" class="layui-form" style="padding:5px;">' +
+                                                                '{{value}}' +
+                                                                '</div>';
+                                                            var L = layer.open({
+                                                                type: 1,
+                                                                offset: ['400px', '50px'],
+                                                                id: name,
+                                                                title: '变量跟踪：' + oname,
+                                                                content: ctx,
+                                                                shade: false,
+                                                                shadeClose: false,
+                                                                closeBtn: false,
+                                                                fixed: true,
+                                                                resize: false,
+                                                                scrollbar: false,
+                                                                success: function() {
+                                                                    $("#" + name + "-app").parent().css('overflow', 'hidden');
+                                                                    var app = new Vue({
+                                                                        el: "#" + name + "-app",
+                                                                        data: {
+                                                                            value: ""
+                                                                        },
+                                                                        methods: {}
+                                                                    });
+                                                                    eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                        app.value = data.value;
+                                                                    });
+                                                                    eventBus.on("close-" + oname, function(sender, data, obj) {
+                                                                        layer.close(L);
+                                                                    });
+                                                                },
+                                                                end: function() {
+                                                                    eventBus.off("modify-" + oname);
+                                                                    eventBus.off("close-" + oname);
+                                                                }
+                                                            });
+                                                            eventBus.on("close", function(sender, data, obj) {
+                                                                layer.close(L);
+                                                            });
+                                                        } else if (ins.loc.length == 1) {
+                                                            var headers = [];
+                                                            for (var jj = 0; jj < ins.loc[0]; jj++) {
+                                                                headers.push({
+                                                                    key: jj,
+                                                                    value: ""
+                                                                });
+                                                            }
+                                                            var ctx = '<div id="' + name + '-app" class="layui-form" style="padding:5px;">' +
+                                                                '  <table class="layui-table">' +
+                                                                '    <colgroup>' +
+                                                                '      <col v-for="header in headers">' +
+                                                                '    </colgroup>' +
+                                                                '    <thead>' +
+                                                                '      <tr>' +
+                                                                '        <th v-for="header in headers">{{header.key}}</th>' +
+                                                                '      </tr> ' +
+                                                                '    </thead>' +
+                                                                '    <tbody>' +
+                                                                '      <tr>' +
+                                                                '        <td v-for="header in headers">{{header.value}}</td>' +
+                                                                '      </tr>' +
+                                                                '    </tbody>' +
+                                                                '  </table>' +
+                                                                '</div>';
+                                                            var L = layer.open({
+                                                                type: 1,
+                                                                offset: ['400px', '50px'],
+                                                                id: name,
+                                                                title: '一维数组跟踪：' + oname,
+                                                                content: ctx,
+                                                                shade: false,
+                                                                shadeClose: false,
+                                                                closeBtn: false,
+                                                                fixed: true,
+                                                                resize: false,
+                                                                scrollbar: false,
+                                                                success: function() {
+                                                                    $("#" + name + "-app").parent().css('overflow', 'hidden');
+                                                                    var app = new Vue({
+                                                                        el: "#" + name + "-app",
+                                                                        data: {
+                                                                            headers: headers
+                                                                        },
+                                                                        methods: {}
+                                                                    });
+                                                                    eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                        app.$set(app.headers, data.loc[0], {
+                                                                            key: data.loc[0],
+                                                                            value: data.value
+                                                                        });
+                                                                    });
+                                                                    eventBus.on("close-" + oname, function(sender, data, obj) {
+                                                                        layer.close(L);
+                                                                    });
+                                                                },
+                                                                end: function() {
+                                                                    eventBus.off("modify-" + oname);
+                                                                    eventBus.off("close-" + oname);
+                                                                }
+                                                            });
+                                                            eventBus.on("close", function(sender, data, obj) {
+                                                                layer.close(L);
+                                                            });
+                                                        } else if (ins.loc.length == 2) {
+
+                                                        } else {
+                                                            layer.msg("错误：不支持二维以上数组");
+                                                        }
+                                                    } else {
+                                                        layer.msg("错误：重复创建");
+                                                    }
+                                                } else if (ins.method == "update") {
+                                                    if (!ins.loc) {
+                                                        eventBus.emit("modify-" + ins.name, window, {
+                                                            value: ins.value
+                                                        });
+                                                    } else if (ins.loc.length == 1) {
+                                                        eventBus.emit("modify-" + ins.name, window, {
+                                                            value: ins.value,
+                                                            loc: ins.loc
+                                                        });
+                                                    } else if (ins.loc.length == 2) {
+                                                        eventBus.emit("modify-" + ins.name, window, {
+                                                            value: ins.value,
+                                                            loc: ins.loc
+                                                        });
+                                                    } else {
+                                                        layer.msg("错误：不支持二维以上数组");
+                                                    }
+                                                } else if (ins.method == "destroy") {
+                                                    // eventBus.emit("close-" + ins.name, window, {});
+                                                } else {}
                                             }
                                             if (this.current < this.total) {
                                                 var ins = this.step[this.current];
@@ -273,8 +411,8 @@
                                     });
                                 });
                                 app.read_next_ins();
-                                eventBus.on("close", function(sender, data, obj) {
-                                    layer.close();
+                                eventBus.on("close_all", function(sender, data, obj) {
+                                    layer.close(LTOP);
                                 });
                             },
                             yes: function() {
@@ -284,17 +422,25 @@
                                     });
                             },
                             btn2: function() {
+                                var id = setInterval(this.yes.bind(this), 400);
+                                eventBus.on("close", function(sender, data, obj) {
+                                    clearInterval(id);
+                                });
+                                return false;
+                            },
+                            btn3: function() {
+                                eventBus.emit("close", window, {});
                                 eventBus.emit("progress", this.app, {
                                     i: 0
                                 });
                                 return false;
                             },
-                            btn3: function() {
-                                eventBus.off("progress");
-                                eventBus.off("send-text");
+                            btn4: function() {},
+                            end: function() {
                                 eventBus.emit("close", window, {});
-                                eventBus.off("close");
-                            },
+                                eventBus.emit("close_all", window, {});
+                                eventBus.offAll();
+                            }
                         });
                     }
                 }
