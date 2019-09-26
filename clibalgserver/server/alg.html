@@ -147,6 +147,7 @@
                             resize: false,
                             btn: ['继续', '重置', '结束'],
                             btnAlign: 'c',
+                            scrollbar: false,
                             success: function() {
                                 var app = new Vue({
                                     el: '#step',
@@ -158,6 +159,75 @@
                                     },
                                     methods: {
                                         read_next_ins: function() {
+                                            if (this.current > 0) {
+                                                var cur = this.current - 1;
+                                                var ins = this.step[cur];
+                                                if (ins.method == "msg") {
+                                                    if (!$("#console").length) {
+                                                        var ctx = '<div id="console-app" class="layui-form" style="padding:5px;">' +
+                                                            '  <table class="layui-table">' +
+                                                            '    <colgroup>' +
+                                                            '      <col width="50">' +
+                                                            '      <col width="250">' +
+                                                            '    </colgroup>' +
+                                                            '    <thead>' +
+                                                            '      <tr>' +
+                                                            '        <th>ID</th>' +
+                                                            '        <th>信息</th>' +
+                                                            '      </tr> ' +
+                                                            '    </thead>' +
+                                                            '    <tbody>' +
+                                                            '      <tr v-for="item in items">' +
+                                                            '        <td>{{item.id}}</td>' +
+                                                            '        <td>{{item.text}}</td>' +
+                                                            '      </tr>' +
+                                                            '    </tbody>' +
+                                                            '  </table>' +
+                                                            '</div>';
+                                                        layer.open({
+                                                            type: 1,
+                                                            offset: ['50px', '400px'],
+                                                            area: ['250px', '300px'],
+                                                            id: 'console',
+                                                            title: '输出',
+                                                            content: ctx,
+                                                            shade: false,
+                                                            shadeClose: false,
+                                                            closeBtn: false,
+                                                            fixed: true,
+                                                            resize: false,
+                                                            scrollbar: false,
+                                                            success: function() {
+                                                                $("#console-app").parent().css('overflow', 'hidden');
+                                                                var app = new Vue({
+                                                                    el: '#console-app',
+                                                                    data: {
+                                                                        items: []
+                                                                    },
+                                                                    methods: {}
+                                                                });
+                                                                var console_id = 1;
+                                                                eventBus.on("send-text", function(sender, data, obj) {
+                                                                    if (app.items.length >= 5) {
+                                                                        app.items = app.items.slice(1);
+                                                                    }
+                                                                    app.items.push({
+                                                                        id: console_id,
+                                                                        text: data
+                                                                    });
+                                                                    console_id++;
+                                                                });
+                                                                eventBus.emit("send-text", window, ins.value);
+                                                            }
+                                                        });
+                                                        eventBus.on("close", function(sender, data, obj) {
+                                                            layer.close();
+                                                        });
+                                                    } else {
+                                                        eventBus.emit("send-text", window, ins.value);
+                                                    }
+                                                } else if (ins.method == "create") {} else if (ins.method == "update") {} else if (ins.method == "destroy") {} else {}
+                                            }
                                             if (this.current < this.total) {
                                                 var ins = this.step[this.current];
                                                 var tt = "未知类型";
@@ -221,6 +291,7 @@
                             },
                             btn3: function() {
                                 eventBus.off("progress");
+                                eventBus.off("send-text");
                                 eventBus.emit("close", window, {});
                                 eventBus.off("close");
                             },
