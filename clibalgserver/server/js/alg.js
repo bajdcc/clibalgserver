@@ -303,7 +303,8 @@ $(document).ready(function() {
                                                                     app.chart_data.datasets[0].data[data.loc[0]] = data.value;
                                                                     app.chart_data.datasets[0].backgroundColor[data.loc[0]] = color(chartColors.blue).alpha(0.5).rgbString();
                                                                     app.chart_data.datasets[0].borderColor[data.loc[0]] = chartColors.blue;
-                                                                    app.chart.update();
+                                                                    if (!data.rapid)
+                                                                        app.chart.update();
                                                                 });
                                                                 eventBus.on("close-" + oname, function(sender, data, obj) {
                                                                     layer.close(L);
@@ -494,17 +495,20 @@ $(document).ready(function() {
                                         } else if (ins.method == "update") {
                                             if (!ins.loc) {
                                                 eventBus.emit("modify-" + ins.name, window, {
-                                                    value: ins.value
+                                                    value: ins.value,
+                                                    rapid: this.is_rapid()
                                                 });
                                             } else if (ins.loc.length == 1) {
                                                 eventBus.emit("modify-" + ins.name, window, {
                                                     value: ins.value,
-                                                    loc: ins.loc
+                                                    loc: ins.loc,
+                                                    rapid: this.is_rapid()
                                                 });
                                             } else if (ins.loc.length == 2) {
                                                 eventBus.emit("modify-" + ins.name, window, {
                                                     value: ins.value,
-                                                    loc: ins.loc
+                                                    loc: ins.loc,
+                                                    rapid: this.is_rapid()
                                                 });
                                             } else {
                                                 layer.msg("错误：不支持二维以上数组");

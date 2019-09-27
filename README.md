@@ -4,6 +4,8 @@
 
 实现一个算法可视化网站。
 
+代码：C++。
+
 ## 介绍
 
 算法用C语言实现，通过后端处理将C代码编译成可视化步骤。
@@ -35,6 +37,8 @@ void trace_array_1d_chart(char* name, void* arr, int type, int cols);
 - [【算法可视化计划】图表呈现](https://zhuanlan.zhihu.com/p/84395451)
 
 ## 截图
+
+![main](https://raw.githubusercontent.com/bajdcc/clibalgserver/master/screenshots/1.gif)
 
 ![main](https://raw.githubusercontent.com/bajdcc/clibalgserver/master/screenshots/1.png)
 
