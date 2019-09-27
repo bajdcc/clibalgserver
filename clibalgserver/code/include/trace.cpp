@@ -9,6 +9,12 @@ void trace_log(char* text) {
     interrupt 305;
 }
 
+// 设置原子操作
+void trace_rapid(int flag) {
+    flag;
+    interrupt 306;
+}
+
 // 支持的追踪类型
 enum trace_type {
     T_CHAR,
@@ -34,6 +40,7 @@ void trace_var(char* name, void* arr, int type) {
 struct __trace_1d__ {
     __trace_var__ v;
     int cols;
+    int chart;
 };
 
 // 追踪一维数组
@@ -43,6 +50,19 @@ void trace_array_1d(char* name, void* arr, int type, int cols) {
     s.v.arr = arr;
     s.v.type = type;
     s.cols = cols;
+    s.chart = 0;
+    &s;
+    interrupt 302;
+}
+
+// 追踪一维数组图表
+void trace_array_1d_chart(char* name, void* arr, int type, int cols) {
+    __trace_1d__ s;
+    s.v.name = name;
+    s.v.arr = arr;
+    s.v.type = type;
+    s.cols = cols;
+    s.chart = 1;
     &s;
     interrupt 302;
 }

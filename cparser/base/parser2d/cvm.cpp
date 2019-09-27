@@ -231,6 +231,7 @@ namespace clib {
         }
         uint32_t pa;
         if (vmm_ismap(va, &pa)) {
+            int bps = 0;
             for (const auto& b : ctx->breakpoints) {
                 const auto& bp = b.second;
                 if (va >= bp.addr_start && va < bp.addr_end) {
@@ -259,8 +260,21 @@ namespace clib {
                         record.loc.push_back(L / bp.matrix[1]);
                         record.loc.push_back(L % bp.matrix[1]);
                     }
+                    if (gui->rapid_mode) {
+                        if (gui->rapid_state > 0) {
+                            record.rapid = true;
+                        }
+                        gui->rapid_state++;
+                    }
                     gui->trace_records.push_back(record);
-                    break;
+                    bps++;
+                }
+            }
+            if (bps > 0) {
+                auto last = gui->trace_records.rbegin();
+                for (auto i = 1; i < bps; i++) {
+                    last->rapid = true;
+                    last++;
                 }
             }
             *(T*)((byte*)pa + OFFSET_INDEX(va)) = value;
@@ -2525,6 +2539,7 @@ namespace clib {
                 uint32 arr;
                 int type;
                 int cols;
+                int chart;
             };
             auto s = vmm_get<__trace_1d__>(ctx->ax._ui);
             s.cols = __max(s.cols, 1);
@@ -2539,6 +2554,7 @@ namespace clib {
             record.method = cgui::T_CREATE;
             record.name = name;
             record.type = s.type;
+            record.chart = s.chart;
             record.loc.push_back(s.cols);
             gui->trace_records.push_back(record);
         }
@@ -2592,6 +2608,13 @@ namespace clib {
             record.method = cgui::T_MESSAGE;
             record.message = s;
             gui->trace_records.push_back(record);
+        }
+        break;
+        case 306:
+        {
+            auto rapid = ctx->ax._i != 0;
+            gui->rapid_mode = true;
+            gui->rapid_state = 0;
         }
         break;
         default:

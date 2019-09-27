@@ -1288,10 +1288,16 @@ namespace clib {
                 continue;
             }
             obj.AddMember("name", StringRef(r.name.c_str()), allocator);
-            if (r.method == T_UPDATE)
+            if (r.method == T_UPDATE) {
                 obj.AddMember(method, "update", allocator);
-            else if (r.method == T_CREATE)
+                if (r.rapid)
+                    obj.AddMember("rapid", Value(true), allocator);
+            }
+            else if (r.method == T_CREATE) {
                 obj.AddMember(method, "create", allocator);
+                if (r.chart && r.type == T_INT)
+                    obj.AddMember("chart", Value(true), allocator);
+            }
             else if (r.method == T_DESTROY) {
                 obj.AddMember(method, "destroy", allocator);
                 arr.PushBack(obj, allocator);

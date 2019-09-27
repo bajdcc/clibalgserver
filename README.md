@@ -12,10 +12,7 @@
 
 ```cpp
 // 控制台输出
-void trace_log(char* text) {
-    text;
-    interrupt 305;
-}
+void trace_log(char* text);
 // 追踪单个变量
 void trace_var(char* name, void* arr, int type);
 // 追踪一维数组
@@ -24,6 +21,10 @@ void trace_array_1d(char* name, void* arr, int type, int cols);
 void trace_array_2d(char* name, void* arr, int type, int rows, int cols);
 // 取消追踪
 void trace_end(char* name);
+// 设置原子操作
+void trace_rapid(int flag);
+// 追踪一维数组图表
+void trace_array_1d_chart(char* name, void* arr, int type, int cols);
 ```
 
 ## 知乎文章列表
@@ -31,6 +32,7 @@ void trace_end(char* name);
 - [​【算法可视化计划】启程](https://zhuanlan.zhihu.com/p/83573660)
 - [​【算法可视化计划】虚拟系统](https://zhuanlan.zhihu.com/p/83863115)
 - [【算法可视化计划】变量跟踪](https://zhuanlan.zhihu.com/p/84017677)
+- [【算法可视化计划】图表呈现](https://zhuanlan.zhihu.com/p/84395451)
 
 ## 截图
 

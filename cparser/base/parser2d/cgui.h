@@ -117,12 +117,16 @@ namespace clib {
             std::string name;
             int type{ 0 };
             std::vector<int> loc;
+            int chart{ 0 };
+            int rapid{ 0 };
             union {
                 char _c;
                 int _i{ 0 };
             } data;
         };
         std::vector<trace_record> trace_records;
+        bool rapid_mode{ false };
+        int rapid_state{ 0 };
 
     private:
         cgen gen;
