@@ -89,7 +89,8 @@ $(document).ready(function() {
                                 current: 0,
                                 step: obj,
                                 curop: "无",
-                                rapid: false
+                                rapid: false,
+                                autos: false
                             },
                             methods: {
                                 is_rapid: function() {
@@ -560,7 +561,6 @@ $(document).ready(function() {
                                 app.read_next_ins();
                                 element.progress('step-pro', Math.floor(100 * data.i / len) + '%');
                                 if (app.is_rapid()) {
-                                    console.log(app.current);
                                     var ne = app.current + 1;
                                     setTimeout(function() {
                                         eventBus.emit("progress", window, {
@@ -586,6 +586,9 @@ $(document).ready(function() {
                         }
                     },
                     btn2: function() {
+                        if (this.app.autos)
+                            return false;
+                        this.app.autos = true;
                         var id = setInterval(this.yes.bind(this), 300);
                         eventBus.on("close", function(sender, data, obj) {
                             clearInterval(id);
@@ -593,6 +596,7 @@ $(document).ready(function() {
                         return false;
                     },
                     btn3: function() {
+                        this.app.autos = false;
                         eventBus.emit("close", window, {});
                         eventBus.emit("progress", window, {
                             i: 0
