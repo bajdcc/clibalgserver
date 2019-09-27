@@ -1,5 +1,9 @@
 # clibalgserver
 
+[![Build status](https://ci.appveyor.com/api/projects/status/lxmhwmad1m7s5gic?svg=true)](https://ci.appveyor.com/project/bajdcc/clibalgserver)
+
+[代码打包下载](https://ci.appveyor.com/project/bajdcc/clibalgserver/build/artifacts)
+
 参见：[【算法可视化计划】启程](https://zhuanlan.zhihu.com/p/83573660)
 
 实现一个算法可视化网站。
