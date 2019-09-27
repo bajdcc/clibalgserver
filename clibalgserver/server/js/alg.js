@@ -304,8 +304,8 @@ $(document).ready(function() {
                                                                     app.chart_data.datasets[0].data[data.loc[0]] = data.value;
                                                                     app.chart_data.datasets[0].backgroundColor[data.loc[0]] = color(chartColors.blue).alpha(0.5).rgbString();
                                                                     app.chart_data.datasets[0].borderColor[data.loc[0]] = chartColors.blue;
-                                                                    if (!data.rapid)
-                                                                        app.chart.update();
+                                                                    //if (!data.rapid)
+                                                                    app.chart.update();
                                                                 });
                                                                 eventBus.on("close-" + oname, function(sender, data, obj) {
                                                                     layer.close(L);
