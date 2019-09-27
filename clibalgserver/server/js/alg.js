@@ -274,7 +274,11 @@ $(document).ready(function() {
                                                                         backgroundColor: backgroundColors,
                                                                         borderColor: borderColors,
                                                                         borderWidth: 1,
-                                                                        data: datas
+                                                                        data: datas,
+                                                                        datalabels: {
+                                                                            anchor: 'end',
+                                                                            align: 'start',
+                                                                        }
                                                                     }]
                                                                 };
                                                                 var app = new Vue({
@@ -282,10 +286,20 @@ $(document).ready(function() {
                                                                     data: {
                                                                         focuses: [],
                                                                         chart_data: chart_data,
-                                                                        chart: null
+                                                                        chart: null,
+                                                                        max_number: null,
+                                                                        min_number: null,
                                                                     },
                                                                     methods: {}
                                                                 });
+                                                                var check_over = function(kk) {
+                                                                    if (kk == 0) return false;
+                                                                    if (app.max_number == null) { app.max_number = kk; return true; }
+                                                                    if (app.min_number == null) { app.min_number = kk; return true; }
+                                                                    app.max_number = Math.max(app.max_number, kk);
+                                                                    app.min_number = Math.min(app.min_number, kk);
+                                                                    return (kk - app.min_number) * 6 > (app.max_number - app.min_number);
+                                                                };
                                                                 app.chart = new Chart(document.getElementById(name + '-app-chart').getContext('2d'), {
                                                                     type: 'bar',
                                                                     data: app.chart_data,
@@ -296,7 +310,20 @@ $(document).ready(function() {
                                                                         },
                                                                         title: {
                                                                             display: false
-                                                                        }
+                                                                        },
+                                                                        showTooltips: false,
+                                                                        plugins: {
+                                                                            datalabels: {
+                                                                                color: '#666',
+                                                                                display: function(context) {
+                                                                                    return check_over(context.dataset.data[context.dataIndex]);
+                                                                                },
+                                                                                font: {
+                                                                                    weight: 'bold'
+                                                                                },
+                                                                                formatter: Math.round
+                                                                            }
+                                                                        },
                                                                     }
                                                                 });
                                                                 eventBus.on("modify-" + oname, function(sender, data, obj) {
