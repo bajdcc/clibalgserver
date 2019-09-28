@@ -176,10 +176,34 @@ $(document).ready(function() {
                                         } else if (ins.method == "create") {
                                             var oname = ins.name;
                                             var name = 'trace__' + ins.name;
+                                            var chartColors = {
+                                                red: 'rgb(255, 99, 132)',
+                                                orange: 'rgb(255, 159, 64)',
+                                                yellow: 'rgb(255, 205, 86)',
+                                                green: 'rgb(75, 192, 192)',
+                                                blue: 'rgb(54, 162, 235)',
+                                                purple: 'rgb(153, 102, 255)',
+                                                grey: 'rgb(201, 203, 207)'
+                                            };
+                                            var color = Chart.helpers.color;
+                                            var get_show_color = function(idx) {
+                                                const sel_colors = [
+                                                    chartColors.blue,
+                                                    chartColors.red,
+                                                    chartColors.green,
+                                                    chartColors.purple,
+                                                    chartColors.yellow,
+                                                    chartColors.orange,
+                                                ];
+                                                return sel_colors[idx % sel_colors.length];
+                                            };
+                                            var trans = '-webkit-transition:background-color .5s ease-in;' +
+                                                '-moz-transition:background-color .5s ease-in;' +
+                                                'transition:background-color .5s ease-in;';
                                             if (!$("#" + name).length) {
                                                 if (!ins.loc) {
                                                     var ctx = '<div id="' + name + '-app" style="padding:5px;text-align:center">' +
-                                                        '<button type="button" class="layui-btn layui-btn-primary">{{value}}</button>' +
+                                                        '<button type="button" class="layui-btn layui-btn-primary" style="' + trans + '">{{value}}</button>' +
                                                         '</div>';
                                                     var L = layer.open({
                                                         type: 1,
@@ -204,7 +228,7 @@ $(document).ready(function() {
                                                                 methods: {}
                                                             });
                                                             eventBus.on("modify-" + oname, function(sender, data, obj) {
-                                                                $("#" + name + "-app > button").css("background-color", "#1E9FFF");
+                                                                $("#" + name + "-app > button").css("background-color", chartColors.blue);
                                                                 app.value = data.value;
                                                                 app.focus = true;
                                                             });
@@ -213,7 +237,7 @@ $(document).ready(function() {
                                                             });
                                                             this.lost_focus = function(sender, data, obj) {
                                                                 if (app.focus) {
-                                                                    $("#" + name + "-app > button").css("background-color", "");
+                                                                    $("#" + name + "-app > button").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
                                                                     app.focus = false;
                                                                 }
                                                             };
@@ -234,16 +258,6 @@ $(document).ready(function() {
                                                         var datas = [];
                                                         var backgroundColors = [];
                                                         var borderColors = [];
-                                                        var chartColors = {
-                                                            red: 'rgb(255, 99, 132)',
-                                                            orange: 'rgb(255, 159, 64)',
-                                                            yellow: 'rgb(255, 205, 86)',
-                                                            green: 'rgb(75, 192, 192)',
-                                                            blue: 'rgb(54, 162, 235)',
-                                                            purple: 'rgb(153, 102, 255)',
-                                                            grey: 'rgb(201, 203, 207)'
-                                                        };
-                                                        var color = Chart.helpers.color;
                                                         for (var jj = 0; jj < ins.loc[0]; jj++) {
                                                             labels.push(jj);
                                                             datas.push(0);
@@ -327,10 +341,11 @@ $(document).ready(function() {
                                                                     }
                                                                 });
                                                                 eventBus.on("modify-" + oname, function(sender, data, obj) {
-                                                                    app.focuses.push(data.loc);
                                                                     app.chart_data.datasets[0].data[data.loc[0]] = data.value;
-                                                                    app.chart_data.datasets[0].backgroundColor[data.loc[0]] = color(chartColors.blue).alpha(0.5).rgbString();
-                                                                    app.chart_data.datasets[0].borderColor[data.loc[0]] = chartColors.blue;
+                                                                    var clr = get_show_color(app.focuses.length);
+                                                                    app.focuses.push(data.loc);
+                                                                    app.chart_data.datasets[0].backgroundColor[data.loc[0]] = color(clr).alpha(0.5).rgbString();
+                                                                    app.chart_data.datasets[0].borderColor[data.loc[0]] = clr;
                                                                     //if (!data.rapid)
                                                                     app.chart.update();
                                                                 });
@@ -378,7 +393,7 @@ $(document).ready(function() {
                                                             '    </thead>' +
                                                             '    <tbody>' +
                                                             '      <tr>' +
-                                                            '        <td v-for="header in headers" style="text-align:center;background-color:#f2f2f2;font-weight:bold">{{header.value}}</td>' +
+                                                            '        <td v-for="header in headers" style="text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{header.value}}</td>' +
                                                             '      </tr>' +
                                                             '    </tbody>' +
                                                             '  </table>' +
@@ -406,8 +421,8 @@ $(document).ready(function() {
                                                                     methods: {}
                                                                 });
                                                                 eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                    $("#" + name + "-app > table > tbody > tr > td:nth(" + (data.loc[0]) + ")").css("background-color", get_show_color(app.focuses.length));
                                                                     app.focuses.push(data.loc);
-                                                                    $("#" + name + "-app > table > tbody > tr > td:nth(" + (data.loc[0]) + ")").css("background-color", "#1E9FFF");
                                                                     app.$set(app.headers, data.loc[0], {
                                                                         key: data.loc[0],
                                                                         value: data.value
@@ -419,7 +434,7 @@ $(document).ready(function() {
                                                                 this.lost_focus = function(sender, data, obj) {
                                                                     if (app.focuses.length) {
                                                                         for (var f in app.focuses)
-                                                                            $("#" + name + "-app > table > tbody > tr > td:nth(" + (app.focuses[f][0]) + ")").css("background-color", "#f2f2f2");
+                                                                            $("#" + name + "-app > table > tbody > tr > td:nth(" + (app.focuses[f][0]) + ")").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
                                                                         app.focuses = [];
                                                                     }
                                                                 };
@@ -460,7 +475,7 @@ $(document).ready(function() {
                                                         '    </thead>' +
                                                         '    <tbody>' +
                                                         '      <tr v-for="rows in datas">' +
-                                                        '        <td v-for="row in rows" style="text-align:center;background-color:#f2f2f2;font-weight:bold">{{row}}</td>' +
+                                                        '        <td v-for="row in rows" style="text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{row}}</td>' +
                                                         '      </tr>' +
                                                         '    </tbody>' +
                                                         '  </table>' +
@@ -489,8 +504,8 @@ $(document).ready(function() {
                                                                 methods: {}
                                                             });
                                                             eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                $("#" + name + "-app > table > tbody > tr:nth(" + (data.loc[0]) + ") > td:nth(" + (data.loc[1]) + ")").css("background-color", get_show_color(app.focuses.length));
                                                                 app.focuses.push(data.loc);
-                                                                $("#" + name + "-app > table > tbody > tr:nth(" + (data.loc[0]) + ") > td:nth(" + (data.loc[1]) + ")").css("background-color", "#1E9FFF");
                                                                 app.$set(app.datas[data.loc[0]], data.loc[1], data.value);
                                                             });
                                                             eventBus.on("close-" + oname, function(sender, data, obj) {
@@ -499,7 +514,7 @@ $(document).ready(function() {
                                                             this.lost_focus = function(sender, data, obj) {
                                                                 if (app.focuses.length) {
                                                                     for (var f in app.focuses)
-                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + (app.focuses[f][0]) + ") > td:nth(" + (app.focuses[f][1]) + ")").css("background-color", "#f2f2f2");
+                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + (app.focuses[f][0]) + ") > td:nth(" + (app.focuses[f][1]) + ")").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
                                                                     app.focuses = [];
                                                                 }
                                                             };
