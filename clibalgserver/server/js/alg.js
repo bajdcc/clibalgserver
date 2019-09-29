@@ -451,13 +451,13 @@ $(document).ready(function() {
                                                         });
                                                     }
                                                 } else if (ins.loc.length == 2) {
-                                                    var headers = [];
+                                                    var headers = [''];
                                                     for (var jj = 0; jj < ins.loc[1]; jj++) {
                                                         headers.push(jj);
                                                     }
                                                     var datas = [];
                                                     for (var jj = 0; jj < ins.loc[0]; jj++) {
-                                                        var arr = [];
+                                                        var arr = ["" + jj];
                                                         for (var kk = 0; kk < ins.loc[1]; kk++) {
                                                             arr.push("-");
                                                         }
@@ -501,12 +501,18 @@ $(document).ready(function() {
                                                                     datas: datas,
                                                                     focuses: []
                                                                 },
-                                                                methods: {}
+                                                                methods: {},
+                                                                mounted: function() {
+                                                                    for (var ii = 0; ii < this.datas.length; ii++) {
+                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + ii + ") > td:nth(0)").css("background-color", '#fff');
+                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + ii + ") > td:nth(0)").css("font-weight", '');
+                                                                    }
+                                                                }
                                                             });
                                                             eventBus.on("modify-" + oname, function(sender, data, obj) {
-                                                                $("#" + name + "-app > table > tbody > tr:nth(" + (data.loc[0]) + ") > td:nth(" + (data.loc[1]) + ")").css("background-color", get_show_color(app.focuses.length));
+                                                                $("#" + name + "-app > table > tbody > tr:nth(" + (data.loc[0]) + ") > td:nth(" + (data.loc[1] + 1) + ")").css("background-color", get_show_color(app.focuses.length));
                                                                 app.focuses.push(data.loc);
-                                                                app.$set(app.datas[data.loc[0]], data.loc[1], data.value);
+                                                                app.$set(app.datas[data.loc[0]], data.loc[1] + 1, data.value);
                                                             });
                                                             eventBus.on("close-" + oname, function(sender, data, obj) {
                                                                 layer.close(L);
@@ -514,7 +520,7 @@ $(document).ready(function() {
                                                             this.lost_focus = function(sender, data, obj) {
                                                                 if (app.focuses.length) {
                                                                     for (var f in app.focuses)
-                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + (app.focuses[f][0]) + ") > td:nth(" + (app.focuses[f][1]) + ")").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
+                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + (app.focuses[f][0]) + ") > td:nth(" + (app.focuses[f][1] + 1) + ")").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
                                                                     app.focuses = [];
                                                                 }
                                                             };
@@ -536,6 +542,7 @@ $(document).ready(function() {
                                                 layer.msg("错误：重复创建");
                                             }
                                         } else if (ins.method == "update") {
+                                            if (ins.type == "char") ins.value = String.fromCharCode(ins.value);
                                             if (!ins.loc) {
                                                 eventBus.emit("modify-" + ins.name, window, {
                                                     value: ins.value,

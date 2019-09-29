@@ -56,7 +56,7 @@ void merge_sort(int* arr, int* tmp, int left, int right) {
 }
 int main(int argc, char** argv) {
     int a[10], i, j;
-	int n = sizeof(a) / sizeof(int);
+    int n = sizeof(a) / sizeof(int);
     int* tmp = malloc(sizeof(a));
     trace_log("归并排序");
     trace_array_1d_chart("数组", &a, T_INT, n);
