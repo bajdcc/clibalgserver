@@ -542,7 +542,8 @@ $(document).ready(function() {
                                                 layer.msg("错误：重复创建");
                                             }
                                         } else if (ins.method == "update") {
-                                            if (ins.type == "char") ins.value = String.fromCharCode(ins.value);
+                                            if (ins.type == "char" && typeof(ins.value) == 'number')
+                                                ins.value = String.fromCharCode(ins.value);
                                             if (!ins.loc) {
                                                 eventBus.emit("modify-" + ins.name, window, {
                                                     value: ins.value,
