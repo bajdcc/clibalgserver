@@ -393,7 +393,7 @@ $(document).ready(function() {
                                                             '    </thead>' +
                                                             '    <tbody>' +
                                                             '      <tr>' +
-                                                            '        <td v-for="header in headers" style="text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{header.value}}</td>' +
+                                                            '        <td v-for="header in headers" style="min-width:20px;text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{header.value}}</td>' +
                                                             '      </tr>' +
                                                             '    </tbody>' +
                                                             '  </table>' +
@@ -475,7 +475,7 @@ $(document).ready(function() {
                                                         '    </thead>' +
                                                         '    <tbody>' +
                                                         '      <tr v-for="rows in datas">' +
-                                                        '        <td v-for="row in rows" style="text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{row}}</td>' +
+                                                        '        <td v-for="row in rows" style="min-width:20px;text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{row}}</td>' +
                                                         '      </tr>' +
                                                         '    </tbody>' +
                                                         '  </table>' +
@@ -638,12 +638,16 @@ $(document).ready(function() {
                         }
                     },
                     btn2: function() {
-                        if (this.app.autos)
+                        if (this.app.autos) {
+                            this.app.autos = false;
+                            clearInterval(this.app.auto_id);
                             return false;
+                        }
                         this.app.autos = true;
-                        var id = setInterval(this.yes.bind(this), 300);
+                        this.app.auto_id = setInterval(this.yes.bind(this), 300);
                         eventBus.on("close", function(sender, data, obj) {
-                            clearInterval(id);
+                            clearInterval(this.app.auto_id);
+                            this.app.autos = false;
                         });
                         return false;
                     },
