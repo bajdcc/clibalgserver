@@ -87,6 +87,5 @@ int main(int argc, char** argv) {
         trace_log("成功");
     else
         trace_log("失败");
-    trace_end("数组");
     trace_end("图表");
 }

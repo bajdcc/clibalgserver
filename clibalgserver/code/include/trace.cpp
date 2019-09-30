@@ -15,6 +15,12 @@ void trace_rapid(int flag) {
     interrupt 306;
 }
 
+// 延迟
+void trace_delay(int n) {
+    n;
+    interrupt 307;
+}
+
 // 支持的追踪类型
 enum trace_type {
     T_CHAR,

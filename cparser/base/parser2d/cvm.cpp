@@ -2621,6 +2621,16 @@ namespace clib {
             gui->rapid_state = 0;
         }
         break;
+        case 307:
+        {
+            auto n = __max(ctx->ax._i, 0);
+            for (auto i = 0; i < n; i++) {
+                cgui::trace_record record;
+                record.method = cgui::T_DELAY;
+                gui->trace_records.push_back(record);
+            }
+        }
+        break;
         default:
 #if LOG_SYSTEM
             ATLTRACE("[SYSTEM] ERR  | unknown interrupt: %d\n", ctx->ax._i);

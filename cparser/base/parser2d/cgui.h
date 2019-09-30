@@ -106,6 +106,7 @@ namespace clib {
             T_UPDATE,
             T_CREATE,
             T_DESTROY,
+            T_DELAY,
         };
         enum trace_type {
             T_CHAR,

@@ -1287,6 +1287,11 @@ namespace clib {
                 arr.PushBack(obj, allocator);
                 continue;
             }
+            if (r.method == T_DELAY) {
+                obj.AddMember(method, "delay", allocator);
+                arr.PushBack(obj, allocator);
+                continue;
+            }
             obj.AddMember("name", StringRef(r.name.c_str()), allocator);
             if (r.method == T_UPDATE) {
                 obj.AddMember(method, "update", allocator);

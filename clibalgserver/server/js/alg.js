@@ -566,7 +566,7 @@ $(document).ready(function() {
                                             }
                                         } else if (ins.method == "destroy") {
                                             // eventBus.emit("close-" + ins.name, window, {});
-                                        } else {}
+                                        } else if (ins.method == "delay") {} else {}
                                     }
                                     if (this.current < this.total) {
                                         var ins = this.step[this.current];
@@ -577,6 +577,8 @@ $(document).ready(function() {
                                         }
                                         if (ins.method == "msg") {
                                             this.curop = "输出：" + ins.value;
+                                        } else if (ins.method == "delay") {
+                                            this.curop = "等待";
                                         } else if (ins.method == "create") {
                                             if (ins.loc && ins.loc.length) {
                                                 this.curop = "创建" + tt + "数组：" + ins.name +
