@@ -2,6 +2,15 @@
 #include "/include/math"
 #include "/include/trace"
 #include "/include/format"
+struct point {
+    int x, y;
+};
+point new_pt(int x, int y) {
+    point pt;
+    pt.x = x;
+    pt.y = y;
+    return pt;
+}
 int L;
 int pt(int x, int y) {
     return x * L + y;
@@ -12,26 +21,32 @@ void output(char* text) {
 }
 int dir[0] = {0, 1, 0, -1, 1, 0, -1, 0};
 int suc = 0;
-int dfs(char* map, int sx, int sy, int ex, int ey) {
-    if (sx == ex && sy == ey) {
-        output(format("到达终点：（%d，%d）", sx, sy));
-        suc = true;
-        return 1;
-    }
-    if (map[pt(sx, sy)] != 'S' && map[pt(sx, sy)] != ' ')
-        return;
-    if (map[pt(sx, sy)] == ' ')
-        map[pt(sx, sy)] = '*';
-    output(format("遍历：（%d，%d）", sx, sy));
-    int i;
-    for (i = 0; i < 4; i++) {
-        int x = sx + dir[i * 2];
-        int y = sy + dir[i * 2 + 1];
-        if (map[pt(x, y)] == ' ' || map[pt(x, y)] == 'E') {
-            if (dfs(map, x, y, ex, ey)) return 1;
+void bfs(char* map, int m, int n, int sx, int sy, int ex, int ey) {
+    point* queue = malloc(m * n * sizeof(point));
+    int front = 0, rear = 0, i;
+    queue[rear++] = new_pt(sx, sy);
+    while (front < rear) {
+        output(format("队列：头=%d，尾=%d", front, rear));
+        point p = queue[front++];
+        sx = p.x; sy = p.y;
+        if (sx == ex && sy == ey) {
+            output(format("到达终点：（%d，%d）", sx, sy));
+            suc = true;
+            break;
+        }
+        if (map[pt(sx, sy)] != 'S' && map[pt(sx, sy)] != ' ')
+            continue;
+        if (map[pt(sx, sy)] == ' ')
+            map[pt(sx, sy)] = '*';
+        output(format("遍历：（%d，%d）", sx, sy));
+        for (i = 0; i < 4; i++) {
+            int x = sx + dir[i * 2];
+            int y = sy + dir[i * 2 + 1];
+            if (map[pt(x, y)] == ' ' || map[pt(x, y)] == 'E') {
+                queue[rear++] = new_pt(x, y);
+            }
         }
     }
-    return 0;
 }
 int main(int argc, char** argv) {
     int m = 8, n = 8, i, j;
@@ -39,7 +54,7 @@ int main(int argc, char** argv) {
     int rands = m * n / 4;
     char* map = malloc((m + 2) * (n + 2) * sizeof(char));
     L = n + 2;
-    trace_log("深度优先搜索");
+    trace_log("宽度优先搜索");
     trace_array_2d("图表", map, T_CHAR, m + 2, n + 2);
     trace_log("造墙中");
     for (i = 1; i <= m; i++) {
@@ -67,7 +82,7 @@ int main(int argc, char** argv) {
             i++;
         }
     }
-    dfs(map, sx, sy, ex, ey);
+    bfs(map, m, n, sx, sy, ex, ey);
     if (suc) 
         trace_log("成功");
     else

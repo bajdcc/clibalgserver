@@ -1302,6 +1302,8 @@ namespace clib {
                     else
                         a += "  |  ";
                 }
+                if (!a.IsEmpty())
+                    ATLTRACE(a.GetBuffer(0));
                 if (k % 4 != 0)
                     ATLTRACE("\n");
                 ATLTRACE("---------------- STACK END >>>>\n\n");
@@ -1324,6 +1326,8 @@ namespace clib {
                     else
                         a << "  |  ";
                 }
+                if (!a.str().empty())
+                    log << a.str();
                 if (k % 4 != 0)
                     log << std::endl;
                 log << "---------------- STACK END >>>>" << std::endl << std::endl;
