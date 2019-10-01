@@ -2617,7 +2617,7 @@ namespace clib {
         case 306:
         {
             auto rapid = ctx->ax._i != 0;
-            gui->rapid_mode = true;
+            gui->rapid_mode = rapid;
             gui->rapid_state = 0;
         }
         break;

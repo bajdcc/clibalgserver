@@ -45,7 +45,9 @@ int main(int argc, char** argv) {
             map[pt(i, j)] = ' ';
         trace_rapid(0);
     }
+    trace_rapid(1);
     dfs(map, n, 1);
+    trace_rapid(0);
     if (suc > 0) 
         trace_log("成功");
     else

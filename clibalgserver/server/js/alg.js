@@ -570,6 +570,8 @@ $(document).ready(function() {
                                     }
                                     if (this.current < this.total) {
                                         var ins = this.step[this.current];
+                                        if (ins.type == "char" && typeof(ins.value) == 'number')
+                                            ins.value = String.fromCharCode(ins.value);
                                         var tt = "未知类型";
                                         if (ins.type) {
                                             if (ins.type == "int") tt = "整型";
@@ -640,19 +642,22 @@ $(document).ready(function() {
                     btn2: function() {
                         if (this.app.autos) {
                             this.app.autos = false;
+                            console.info("stop timer: ", this.app.auto_id);
                             clearInterval(this.app.auto_id);
                             return false;
                         }
                         this.app.autos = true;
                         this.app.auto_id = setInterval(this.yes.bind(this), 300);
+                        console.info("timer: ", this.app.auto_id);
+                        var _app = this.app;
                         eventBus.on("close", function(sender, data, obj) {
-                            clearInterval(this.app.auto_id);
-                            this.app.autos = false;
+                            console.info("stop timer: ", _app.auto_id);
+                            clearInterval(_app.auto_id);
+                            _app.autos = false;
                         });
                         return false;
                     },
                     btn3: function() {
-                        this.app.autos = false;
                         eventBus.emit("close", window, {});
                         eventBus.emit("progress", window, {
                             i: 0
