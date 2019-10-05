@@ -1301,7 +1301,9 @@ namespace clib {
             else if (r.method == T_CREATE) {
                 obj.AddMember(method, "create", allocator);
                 if (r.chart && r.type == T_INT)
-                    obj.AddMember("chart", Value(true), allocator);
+                    obj.AddMember("chart", Value(r.chart), allocator);
+                if (!r.message.empty())
+                    obj.AddMember(value, StringRef(r.message.c_str()), allocator);
             }
             else if (r.method == T_DESTROY) {
                 obj.AddMember(method, "destroy", allocator);

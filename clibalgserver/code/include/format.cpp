@@ -66,6 +66,14 @@ char* format(char* fmt, ...) {
                 args += sizeof(unsigned int);
             }
             break;
+            case 'x':
+            {
+                static char _D[16];
+                itoa(*((unsigned int*)args), _D, 16);
+                __varg_append_string(&s, _D);
+                args += sizeof(unsigned int);
+            }
+            break;
             case 'l':
             {
                 static char _l[32];

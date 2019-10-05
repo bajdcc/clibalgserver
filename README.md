@@ -14,6 +14,17 @@
 
 算法用C语言实现，通过后端处理将C代码编译成可视化步骤。
 
+## 前端技术栈
+
+- jQuery
+- LayUI
+- layx
+- Vue
+- Ace editor
+- eventbus
+- Chartjs
+- Gojs
+
 ## 调试接口
 
 ```cpp

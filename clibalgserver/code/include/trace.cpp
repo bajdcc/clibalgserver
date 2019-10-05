@@ -25,6 +25,7 @@ void trace_delay(int n) {
 enum trace_type {
     T_CHAR,
     T_INT,
+    T_FLOAT,
 };
 
 struct __trace_var__ {
@@ -94,4 +95,26 @@ void trace_array_2d(char* name, void* arr, int type, int rows, int cols) {
 void trace_end(char* name) {
     name;
     interrupt 304;
+}
+
+struct __trace_graph__ {
+    char* name;
+    int type;
+    void* id;
+    void* adj;
+    int n;
+    int inf;
+};
+
+// 追踪图
+void trace_graph(char* name, void* id, void* adj, int inf, int type, int n) {
+    __trace_graph__ s;
+    s.name = name;
+    s.type = type;
+    s.id = id;
+    s.adj = adj;
+    s.n = n;
+    s.inf = inf;
+    &s;
+    interrupt 308;
 }

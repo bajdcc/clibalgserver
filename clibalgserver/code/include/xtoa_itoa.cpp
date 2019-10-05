@@ -251,3 +251,31 @@ void i64toa(long value, char* buffer) {
 
     u64toa(u, buffer);
 }
+
+void itoa(unsigned int value, char* buffer, int radix) {
+    if (value == 0U) {
+        *buffer++ = '0';
+        *buffer++ = '\0';
+        return;
+    }
+    unsigned int digval;
+    char* b = buffer;
+    while (value > 0U) {
+        unsigned int digval = value % radix;
+        value = value / radix;
+        if (digval > 9U) {
+            *buffer++ = (char)(digval - 10U + 'a');
+        }
+        else {
+            *buffer++ = (char)digval + '0';
+        }
+    }
+    *buffer-- = '\0';
+    while (b < buffer) {
+        char temp = *b;
+        *b = *buffer;
+        *buffer = temp;
+        b++;
+        buffer--;
+    }
+}

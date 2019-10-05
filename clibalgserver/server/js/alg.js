@@ -253,7 +253,7 @@ $(document).ready(function() {
                                                         layer.close(L);
                                                     });
                                                 } else if (ins.loc.length == 1) {
-                                                    if (ins.chart) {
+                                                    if (ins.chart == 1) {
                                                         var labels = [];
                                                         var datas = [];
                                                         var backgroundColors = [];
@@ -451,90 +451,268 @@ $(document).ready(function() {
                                                         });
                                                     }
                                                 } else if (ins.loc.length == 2) {
-                                                    var headers = [''];
-                                                    for (var jj = 0; jj < ins.loc[1]; jj++) {
-                                                        headers.push(jj);
-                                                    }
-                                                    var datas = [];
-                                                    for (var jj = 0; jj < ins.loc[0]; jj++) {
-                                                        var arr = ["" + jj];
-                                                        for (var kk = 0; kk < ins.loc[1]; kk++) {
-                                                            arr.push("-");
-                                                        }
-                                                        datas.push(arr);
-                                                    }
-                                                    var ctx = '<div id="' + name + '-app" class="layui-form" style="padding:5px;">' +
-                                                        '  <table class="layui-table">' +
-                                                        '    <colgroup>' +
-                                                        '      <col v-for="header in headers">' +
-                                                        '    </colgroup>' +
-                                                        '    <thead>' +
-                                                        '      <tr>' +
-                                                        '        <th v-for="header in headers" style="text-align:center;background-color:#fff;">{{header}}</th>' +
-                                                        '      </tr>' +
-                                                        '    </thead>' +
-                                                        '    <tbody>' +
-                                                        '      <tr v-for="rows in datas">' +
-                                                        '        <td v-for="row in rows" style="min-width:20px;text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{row}}</td>' +
-                                                        '      </tr>' +
-                                                        '    </tbody>' +
-                                                        '  </table>' +
-                                                        '</div>';
-                                                    var L = layer.open({
-                                                        type: 1,
-                                                        offset: ['400px', '50px'],
-                                                        id: name,
-                                                        title: '二维数组跟踪：' + oname,
-                                                        content: ctx,
-                                                        shade: false,
-                                                        shadeClose: false,
-                                                        closeBtn: false,
-                                                        fixed: true,
-                                                        resize: false,
-                                                        scrollbar: false,
-                                                        success: function() {
-                                                            $("#" + name + "-app").parent().css('overflow', 'hidden');
-                                                            var app = new Vue({
-                                                                el: "#" + name + "-app",
-                                                                data: {
-                                                                    headers: headers,
-                                                                    datas: datas,
-                                                                    focuses: []
-                                                                },
-                                                                methods: {},
-                                                                mounted: function() {
-                                                                    for (var ii = 0; ii < this.datas.length; ii++) {
-                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + ii + ") > td:nth(0)").css("background-color", '#fff');
-                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + ii + ") > td:nth(0)").css("font-weight", '');
+                                                    if (ins.chart == 2) {
+                                                        var ctx = '<div id="' + name + '-app" style="padding:5px;text-align:center;">' +
+                                                            '<div id="' + name + '-app-diagram" style="width: 600px; height: 400px">' +
+                                                            '</div></div>';
+                                                        var L = layer.open({
+                                                            type: 1,
+                                                            offset: ['400px', '50px'],
+                                                            area: ['610px', '450px'],
+                                                            id: name,
+                                                            title: '图跟踪：' + oname,
+                                                            content: ctx,
+                                                            shade: false,
+                                                            shadeClose: false,
+                                                            closeBtn: false,
+                                                            fixed: true,
+                                                            resize: false,
+                                                            scrollbar: false,
+                                                            success: function() {
+                                                                $("#" + name + "-app").parent().css('overflow', 'hidden');
+                                                                $("#" + name + "-app").parent().css('height', '400px');
+                                                                var app = new Vue({
+                                                                    el: "#" + name + "-app",
+                                                                    data: {
+                                                                        value: "",
+                                                                        focuses: [],
+                                                                        inf: ins.loc[1]
+                                                                    },
+                                                                    methods: {}
+                                                                });
+                                                                eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                    if (data.value >= app.inf) return;
+                                                                    myDiagram.startTransaction("modify");
+                                                                    myDiagram.model.addLinkData({ "from": data.loc[0], "to": data.loc[1], "text": "" + data.value, color: go.Brush.randomColor(0, 127) });
+                                                                    myDiagram.commitTransaction("modify");
+                                                                    app.focuses.push(data.loc);
+                                                                });
+                                                                eventBus.on("close-" + oname, function(sender, data, obj) {
+                                                                    layer.close(L);
+                                                                });
+                                                                this.lost_focus = function(sender, data, obj) {
+                                                                    if (app.focuses.length) {
+                                                                        //for (var f in app.focuses)
+                                                                        app.focuses = [];
+                                                                    }
+                                                                };
+                                                                eventBus.on("lost_focus", this.lost_focus);
+
+                                                                var $$ = go.GraphObject.make; // for conciseness in defining templates
+
+                                                                myDiagram =
+                                                                    $$(go.Diagram, name + '-app-diagram', // must be the ID or reference to div
+                                                                        {
+                                                                            initialAutoScale: go.Diagram.UniformToFill,
+                                                                            padding: 5,
+                                                                            contentAlignment: go.Spot.Center,
+                                                                            layout: $$(go.ForceDirectedLayout, { defaultSpringLength: 5 }),
+                                                                            maxSelectionCount: 2
+                                                                        });
+
+                                                                // define the Node template
+                                                                myDiagram.nodeTemplate =
+                                                                    $$(go.Node, "Horizontal", {
+                                                                            locationSpot: go.Spot.Center, // Node.location is the center of the Shape
+                                                                            locationObjectName: "SHAPE",
+                                                                            selectionAdorned: false,
+                                                                            selectionChanged: nodeSelectionChanged
+                                                                        },
+                                                                        $$(go.Panel, "Auto",
+                                                                            $$(go.Shape, "Ellipse", {
+                                                                                    name: "SHAPE",
+                                                                                    fill: "lightgray", // default value, but also data-bound
+                                                                                    stroke: "transparent", // modified by highlighting
+                                                                                    strokeWidth: 2,
+                                                                                    desiredSize: new go.Size(30, 30),
+                                                                                    portId: ""
+                                                                                }, // so links will go to the shape, not the whole node
+                                                                                new go.Binding("fill", "isSelected", function(s, obj) { return s ? "red" : obj.part.data.color; }).ofObject()),
+                                                                            $$(go.TextBlock,
+                                                                                new go.Binding("text", "distance", function(d) {
+                                                                                    if (d === Infinity) return "INF";
+                                                                                    else return d | 0;
+                                                                                }))),
+                                                                        $$(go.TextBlock,
+                                                                            new go.Binding("text")));
+
+                                                                // define the Link template
+                                                                myDiagram.linkTemplate =
+                                                                    $$(go.Link, {
+                                                                            selectable: true, // links cannot be selected by the user
+                                                                            curve: go.Link.Bezier,
+                                                                            layerName: "Background" // don't cross in front of any nodes
+                                                                        },
+                                                                        $$(go.Shape,
+                                                                            // mark each Shape to get the link geometry with isPanelMain: true
+                                                                            { isPanelMain: true, stroke: "black", strokeWidth: 1 },
+                                                                            new go.Binding("stroke", "color")),
+                                                                        $$(go.Shape, { toArrow: "Standard" }),
+                                                                        $$(go.Panel, "Auto",
+                                                                            $$(go.Shape, // the label background, which becomes transparent around the edges
+                                                                                {
+                                                                                    fill: $$(go.Brush, "Radial", { 0: "rgb(240, 240, 240)", 0.3: "rgb(240, 240, 240)", 1: "rgba(240, 240, 240, 0)" }),
+                                                                                    stroke: null
+                                                                                }),
+                                                                            $$(go.TextBlock, // the label text
+                                                                                {
+                                                                                    textAlign: "center",
+                                                                                    font: "10pt helvetica, arial, sans-serif",
+                                                                                    stroke: "#555555",
+                                                                                    margin: 4
+                                                                                },
+                                                                                new go.Binding("text", "text"))
+                                                                        )
+                                                                    );
+
+                                                                // Override the clickSelectingTool's standardMouseSelect
+                                                                // If less than 2 nodes are selected, always add to the selection
+                                                                myDiagram.toolManager.clickSelectingTool.standardMouseSelect = function() {
+                                                                    var diagram = this.diagram;
+                                                                    if (diagram === null || !diagram.allowSelect) return;
+                                                                    var e = diagram.lastInput;
+                                                                    var count = diagram.selection.count;
+                                                                    var curobj = diagram.findPartAt(e.documentPoint, false);
+                                                                    if (curobj !== null) {
+                                                                        if (count < 1) { // add the part to the selection
+                                                                            if (!curobj.isSelected) {
+                                                                                var part = curobj;
+                                                                                if (part !== null) part.isSelected = true;
+                                                                            }
+                                                                        } else {
+                                                                            if (!curobj.isSelected) {
+                                                                                var part = curobj;
+                                                                                if (part !== null) diagram.select(part);
+                                                                            }
+                                                                        }
+                                                                    } else if (e.left && !(e.control || e.meta) && !e.shift) {
+                                                                        // left click on background with no modifier: clear selection
+                                                                        diagram.clearSelection();
                                                                     }
                                                                 }
-                                                            });
-                                                            eventBus.on("modify-" + oname, function(sender, data, obj) {
-                                                                $("#" + name + "-app > table > tbody > tr:nth(" + (data.loc[0]) + ") > td:nth(" + (data.loc[1] + 1) + ")").css("background-color", get_show_color(app.focuses.length));
-                                                                app.focuses.push(data.loc);
-                                                                app.$set(app.datas[data.loc[0]], data.loc[1] + 1, data.value);
-                                                            });
-                                                            eventBus.on("close-" + oname, function(sender, data, obj) {
-                                                                layer.close(L);
-                                                            });
-                                                            this.lost_focus = function(sender, data, obj) {
-                                                                if (app.focuses.length) {
-                                                                    for (var f in app.focuses)
-                                                                        $("#" + name + "-app > table > tbody > tr:nth(" + (app.focuses[f][0]) + ") > td:nth(" + (app.focuses[f][1] + 1) + ")").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
-                                                                    app.focuses = [];
+
+                                                                var names = JSON.parse(ins.value);
+
+                                                                var nodeDataArray = [];
+                                                                for (var i = 0; i < names.length; i++) {
+                                                                    nodeDataArray.push({ key: i, text: names[i], color: go.Brush.randomColor(128, 240) });
                                                                 }
-                                                            };
-                                                            eventBus.on("lost_focus", this.lost_focus);
-                                                        },
-                                                        end: function() {
-                                                            eventBus.off("modify-" + oname);
-                                                            eventBus.off("close-" + oname);
-                                                            eventBus.off("lost_focus", this.lost_focus);
+
+                                                                var linkDataArray = [];
+                                                                /*var num = nodeDataArray.length;
+                                                                for (var i = 0; i < num * 2; i++) {
+                                                                    var a = Math.floor(Math.random() * num);
+                                                                    var b = Math.floor(Math.random() * num / 4) + 1;
+                                                                    linkDataArray.push({ from: a, to: (a + b) % num, color: go.Brush.randomColor(0, 127) });
+                                                                }*/
+
+                                                                myDiagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
+
+                                                                // When a node is selected show distances from the first selected node.
+                                                                // When a second node is selected, highlight the shortest path between two selected nodes.
+                                                                // If a node is deselected, clear all highlights.
+                                                                function nodeSelectionChanged(node) {
+                                                                    var diagram = node.diagram;
+                                                                    if (diagram === null) return;
+                                                                    diagram.clearHighlighteds();
+                                                                    if (node.isSelected) {}
+                                                                }
+                                                            },
+                                                            end: function() {
+                                                                eventBus.off("modify-" + oname);
+                                                                eventBus.off("close-" + oname);
+                                                                eventBus.off("lost_focus", this.lost_focus);
+                                                            }
+                                                        });
+                                                        eventBus.on("close", function(sender, data, obj) {
+                                                            layer.close(L);
+                                                        });
+                                                    } else {
+                                                        var headers = [''];
+                                                        for (var jj = 0; jj < ins.loc[1]; jj++) {
+                                                            headers.push(jj);
                                                         }
-                                                    });
-                                                    eventBus.on("close", function(sender, data, obj) {
-                                                        layer.close(L);
-                                                    });
+                                                        var datas = [];
+                                                        for (var jj = 0; jj < ins.loc[0]; jj++) {
+                                                            var arr = ["" + jj];
+                                                            for (var kk = 0; kk < ins.loc[1]; kk++) {
+                                                                arr.push("-");
+                                                            }
+                                                            datas.push(arr);
+                                                        }
+                                                        var ctx = '<div id="' + name + '-app" class="layui-form" style="padding:5px;">' +
+                                                            '  <table class="layui-table">' +
+                                                            '    <colgroup>' +
+                                                            '      <col v-for="header in headers">' +
+                                                            '    </colgroup>' +
+                                                            '    <thead>' +
+                                                            '      <tr>' +
+                                                            '        <th v-for="header in headers" style="text-align:center;background-color:#fff;">{{header}}</th>' +
+                                                            '      </tr>' +
+                                                            '    </thead>' +
+                                                            '    <tbody>' +
+                                                            '      <tr v-for="rows in datas">' +
+                                                            '        <td v-for="row in rows" style="min-width:20px;text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{row}}</td>' +
+                                                            '      </tr>' +
+                                                            '    </tbody>' +
+                                                            '  </table>' +
+                                                            '</div>';
+                                                        var L = layer.open({
+                                                            type: 1,
+                                                            offset: ['400px', '50px'],
+                                                            id: name,
+                                                            title: '二维数组跟踪：' + oname,
+                                                            content: ctx,
+                                                            shade: false,
+                                                            shadeClose: false,
+                                                            closeBtn: false,
+                                                            fixed: true,
+                                                            resize: false,
+                                                            scrollbar: false,
+                                                            success: function() {
+                                                                $("#" + name + "-app").parent().css('overflow', 'hidden');
+                                                                var app = new Vue({
+                                                                    el: "#" + name + "-app",
+                                                                    data: {
+                                                                        headers: headers,
+                                                                        datas: datas,
+                                                                        focuses: []
+                                                                    },
+                                                                    methods: {},
+                                                                    mounted: function() {
+                                                                        for (var ii = 0; ii < this.datas.length; ii++) {
+                                                                            $("#" + name + "-app > table > tbody > tr:nth(" + ii + ") > td:nth(0)").css("background-color", '#fff');
+                                                                            $("#" + name + "-app > table > tbody > tr:nth(" + ii + ") > td:nth(0)").css("font-weight", '');
+                                                                        }
+                                                                    }
+                                                                });
+                                                                eventBus.on("modify-" + oname, function(sender, data, obj) {
+                                                                    $("#" + name + "-app > table > tbody > tr:nth(" + (data.loc[0]) + ") > td:nth(" + (data.loc[1] + 1) + ")").css("background-color", get_show_color(app.focuses.length));
+                                                                    app.focuses.push(data.loc);
+                                                                    app.$set(app.datas[data.loc[0]], data.loc[1] + 1, data.value);
+                                                                });
+                                                                eventBus.on("close-" + oname, function(sender, data, obj) {
+                                                                    layer.close(L);
+                                                                });
+                                                                this.lost_focus = function(sender, data, obj) {
+                                                                    if (app.focuses.length) {
+                                                                        for (var f in app.focuses)
+                                                                            $("#" + name + "-app > table > tbody > tr:nth(" + (app.focuses[f][0]) + ") > td:nth(" + (app.focuses[f][1] + 1) + ")").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
+                                                                        app.focuses = [];
+                                                                    }
+                                                                };
+                                                                eventBus.on("lost_focus", this.lost_focus);
+                                                            },
+                                                            end: function() {
+                                                                eventBus.off("modify-" + oname);
+                                                                eventBus.off("close-" + oname);
+                                                                eventBus.off("lost_focus", this.lost_focus);
+                                                            }
+                                                        });
+                                                        eventBus.on("close", function(sender, data, obj) {
+                                                            layer.close(L);
+                                                        });
+                                                    }
                                                 } else {
                                                     layer.msg("错误：不支持二维以上数组");
                                                 }
@@ -642,16 +820,16 @@ $(document).ready(function() {
                     btn2: function() {
                         if (this.app.autos) {
                             this.app.autos = false;
-                            console.info("stop timer: ", this.app.auto_id);
+                            //console.info("stop timer: ", this.app.auto_id);
                             clearInterval(this.app.auto_id);
                             return false;
                         }
                         this.app.autos = true;
                         this.app.auto_id = setInterval(this.yes.bind(this), 300);
-                        console.info("timer: ", this.app.auto_id);
+                        //console.info("timer: ", this.app.auto_id);
                         var _app = this.app;
                         eventBus.on("close", function(sender, data, obj) {
-                            console.info("stop timer: ", _app.auto_id);
+                            //console.info("stop timer: ", _app.auto_id);
                             clearInterval(_app.auto_id);
                             _app.autos = false;
                         });

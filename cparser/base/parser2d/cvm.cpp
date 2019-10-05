@@ -14,6 +14,8 @@
 #include "cgen.h"
 #include "cexception.h"
 #include "cgui.h"
+#include "../clibalgserver/rapidjson/writer.h"
+#include "../clibalgserver/rapidjson/stringbuffer.h"
 
 #define REPORT_ERROR 0
 #define REPORT_ERROR_FILE "error.log"
@@ -214,7 +216,8 @@ namespace clib {
     int trace_type_str(int n) {
         static int type_str[] = {
             1,
-            4
+            4,
+            4,
         };
         if (n < 0 || n >= sizeof(type_str) / sizeof(int))
             return 1;
@@ -2535,7 +2538,7 @@ namespace clib {
             record.type = s.type;
             gui->trace_records.push_back(record);
         }
-            break;
+        break;
         case 302:
         {
             struct __trace_1d__ {
@@ -2629,6 +2632,49 @@ namespace clib {
                 record.method = cgui::T_DELAY;
                 gui->trace_records.push_back(record);
             }
+        }
+        break;
+        case 308:
+        {
+            struct __trace_graph__ {
+                uint32 name;
+                int type;
+                uint32 id;
+                uint32 adj;
+                int n;
+                int inf;
+            };
+            auto s = vmm_get<__trace_graph__>(ctx->ax._ui);
+            s.n = __max(s.n, 1);
+            breakpoint bp;
+            auto name = vmm_getstr(s.name);
+            bp.addr_start = s.adj;
+            bp.addr_end = s.adj + trace_type_str(s.type) * s.n * s.n;
+            bp.type = s.type;
+            bp.matrix.push_back(s.n);
+            bp.matrix.push_back(s.n);
+            ctx->breakpoints.insert(std::make_pair(name, bp));
+            cgui::trace_record record;
+            record.method = cgui::T_CREATE;
+            record.name = name;
+            record.type = s.type;
+            record.chart = 2;
+            record.loc.push_back(s.n);
+            record.loc.push_back(s.inf);
+            {
+                using namespace rapidjson;
+                StringBuffer strBuf;
+                Writer<rapidjson::StringBuffer> writer(strBuf);
+                writer.StartArray();
+                for (auto i = 0; i < s.n; i++) {
+                    auto idp = vmm_get(s.id + i * sizeof(char*));
+                    auto idk = vmm_getstr(idp);
+                    writer.String(idk.c_str());
+                }
+                writer.EndArray();
+                record.message = strBuf.GetString();
+            }
+            gui->trace_records.push_back(record);
         }
         break;
         default:

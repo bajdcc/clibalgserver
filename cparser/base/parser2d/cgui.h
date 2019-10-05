@@ -111,6 +111,7 @@ namespace clib {
         enum trace_type {
             T_CHAR,
             T_INT,
+            T_FLOAT,
         };
         struct trace_record {
             std::string message;
