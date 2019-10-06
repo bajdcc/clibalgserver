@@ -483,6 +483,7 @@ $(document).ready(function() {
                                                                 eventBus.on("modify-" + oname, function(sender, data, obj) {
                                                                     if (data.value >= app.inf) return;
                                                                     var v = "" + data.value;
+                                                                    var dir = false;
                                                                     app.focuses.push(data.loc);
                                                                     var aa = myDiagram.findLinksByExample({ "from": data.loc[0], "to": data.loc[1] });
                                                                     if (aa.count > 0) {
@@ -491,6 +492,7 @@ $(document).ready(function() {
                                                                         if (aa.first().data.text == v) {
                                                                             myDiagram.findNodeForKey(data.loc[0]).findLinksOutOf()
                                                                                 .filter(function(l) { return l.data.to == data.loc[1] }).each(function(l) { l.isHighlighted = true; });
+                                                                            return;
                                                                         } else {
                                                                             myDiagram.findNodeForKey(data.loc[0]).findLinksOutOf()
                                                                                 .filter(function(l) { return l.data.to == data.loc[1] }).each(function(l) {
@@ -498,8 +500,8 @@ $(document).ready(function() {
                                                                                     l.data.dir = true;
                                                                                     l.data.text = v;
                                                                                 });
+                                                                            dir = true;
                                                                         }
-                                                                        return;
                                                                     }
                                                                     var bb = myDiagram.findLinksByExample({ "from": data.loc[1], "to": data.loc[0] });
                                                                     if (bb.count > 0) {
@@ -508,6 +510,7 @@ $(document).ready(function() {
                                                                         if (bb.first().data.text == v) {
                                                                             myDiagram.findNodeForKey(data.loc[1]).findLinksOutOf()
                                                                                 .filter(function(l) { return l.data.to == data.loc[0] }).each(function(l) { l.isHighlighted = true; });
+                                                                            return;
                                                                         } else {
                                                                             myDiagram.findNodeForKey(data.loc[1]).findLinksOutOf()
                                                                                 .filter(function(l) { return l.data.to == data.loc[0] }).each(function(l) {
@@ -515,11 +518,11 @@ $(document).ready(function() {
                                                                                     l.data.dir = true;
                                                                                     l.data.text = v;
                                                                                 });
+                                                                            dir = true;
                                                                         }
-                                                                        return;
                                                                     }
                                                                     myDiagram.startTransaction("modify");
-                                                                    myDiagram.model.addLinkData({ "from": data.loc[0], "to": data.loc[1], "text": v, "color": go.Brush.randomColor(0, 127), "dir": false });
+                                                                    myDiagram.model.addLinkData({ "from": data.loc[0], "to": data.loc[1], "text": v, "color": go.Brush.randomColor(0, 127), "dir": dir });
                                                                     myDiagram.commitTransaction("modify");
                                                                 });
                                                                 eventBus.on("close-" + oname, function(sender, data, obj) {
