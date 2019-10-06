@@ -237,7 +237,7 @@ $(document).ready(function() {
                                                             });
                                                             this.lost_focus = function(sender, data, obj) {
                                                                 if (app.focus) {
-                                                                    $("#" + name + "-app > button").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
+                                                                    $("#" + name + "-app > button").css("background-color", color(chartColors.grey).alpha(0.6).rgbString());
                                                                     app.focus = false;
                                                                 }
                                                             };
@@ -261,7 +261,7 @@ $(document).ready(function() {
                                                         for (var jj = 0; jj < ins.loc[0]; jj++) {
                                                             labels.push(jj);
                                                             datas.push(0);
-                                                            backgroundColors.push(color(chartColors.grey).alpha(0.5).rgbString());
+                                                            backgroundColors.push(color(chartColors.grey).alpha(0.6).rgbString());
                                                             borderColors.push(chartColors.grey);
                                                         }
                                                         var ctx = '<div id="' + name + '-app" class="layui-form" style="padding:5px;">' +
@@ -355,7 +355,7 @@ $(document).ready(function() {
                                                                 this.lost_focus = function(sender, data, obj) {
                                                                     if (app.focuses.length) {
                                                                         for (var f in app.focuses) {
-                                                                            app.chart_data.datasets[0].backgroundColor[app.focuses[f][0]] = color(chartColors.grey).alpha(0.5).rgbString();
+                                                                            app.chart_data.datasets[0].backgroundColor[app.focuses[f][0]] = color(chartColors.grey).alpha(0.6).rgbString();
                                                                             app.chart_data.datasets[0].borderColor[app.focuses[f][0]] = chartColors.grey;
                                                                         }
                                                                         app.chart.update();
@@ -393,7 +393,7 @@ $(document).ready(function() {
                                                             '    </thead>' +
                                                             '    <tbody>' +
                                                             '      <tr>' +
-                                                            '        <td v-for="header in headers" style="min-width:20px;text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{header.value}}</td>' +
+                                                            '        <td v-for="header in headers" style="min-width:20px;text-align:center;background-color:' + color(chartColors.grey).alpha(0.6).rgbString() + ';font-weight:bold;' + trans + '">{{header.value}}</td>' +
                                                             '      </tr>' +
                                                             '    </tbody>' +
                                                             '  </table>' +
@@ -434,7 +434,7 @@ $(document).ready(function() {
                                                                 this.lost_focus = function(sender, data, obj) {
                                                                     if (app.focuses.length) {
                                                                         for (var f in app.focuses)
-                                                                            $("#" + name + "-app > table > tbody > tr > td:nth(" + (app.focuses[f][0]) + ")").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
+                                                                            $("#" + name + "-app > table > tbody > tr > td:nth(" + (app.focuses[f][0]) + ")").css("background-color", color(chartColors.grey).alpha(0.6).rgbString());
                                                                         app.focuses = [];
                                                                     }
                                                                 };
@@ -482,19 +482,44 @@ $(document).ready(function() {
                                                                 });
                                                                 eventBus.on("modify-" + oname, function(sender, data, obj) {
                                                                     if (data.value >= app.inf) return;
+                                                                    var v = "" + data.value;
                                                                     app.focuses.push(data.loc);
-                                                                    if (myDiagram.findLinksByExample({ "from": data.loc[0], "to": data.loc[1] }).count > 0) {
+                                                                    var aa = myDiagram.findLinksByExample({ "from": data.loc[0], "to": data.loc[1] });
+                                                                    if (aa.count > 0) {
                                                                         myDiagram.findNodeForKey(data.loc[0]).isHighlighted = true;
                                                                         myDiagram.findNodeForKey(data.loc[1]).isHighlighted = true;
-                                                                        myDiagram.findNodeForKey(data.loc[0]).findLinksOutOf()
-                                                                            .filter(function(l) { return l.data.to == data.loc[1] }).each(function(l) { l.isHighlighted = true; });
-                                                                        myDiagram.findNodeForKey(data.loc[1]).findLinksOutOf()
-                                                                            .filter(function(l) { return l.data.to == data.loc[0] }).each(function(l) { l.isHighlighted = true; });
-
+                                                                        if (aa.first().data.text == v) {
+                                                                            myDiagram.findNodeForKey(data.loc[0]).findLinksOutOf()
+                                                                                .filter(function(l) { return l.data.to == data.loc[1] }).each(function(l) { l.isHighlighted = true; });
+                                                                        } else {
+                                                                            myDiagram.findNodeForKey(data.loc[0]).findLinksOutOf()
+                                                                                .filter(function(l) { return l.data.to == data.loc[1] }).each(function(l) {
+                                                                                    l.isHighlighted = true;
+                                                                                    l.data.dir = true;
+                                                                                    l.data.text = v;
+                                                                                });
+                                                                        }
+                                                                        return;
+                                                                    }
+                                                                    var bb = myDiagram.findLinksByExample({ "from": data.loc[1], "to": data.loc[0] });
+                                                                    if (bb.count > 0) {
+                                                                        myDiagram.findNodeForKey(data.loc[0]).isHighlighted = true;
+                                                                        myDiagram.findNodeForKey(data.loc[1]).isHighlighted = true;
+                                                                        if (bb.first().data.text == v) {
+                                                                            myDiagram.findNodeForKey(data.loc[1]).findLinksOutOf()
+                                                                                .filter(function(l) { return l.data.to == data.loc[0] }).each(function(l) { l.isHighlighted = true; });
+                                                                        } else {
+                                                                            myDiagram.findNodeForKey(data.loc[1]).findLinksOutOf()
+                                                                                .filter(function(l) { return l.data.to == data.loc[0] }).each(function(l) {
+                                                                                    l.isHighlighted = true;
+                                                                                    l.data.dir = true;
+                                                                                    l.data.text = v;
+                                                                                });
+                                                                        }
                                                                         return;
                                                                     }
                                                                     myDiagram.startTransaction("modify");
-                                                                    myDiagram.model.addLinkData({ "from": data.loc[0], "to": data.loc[1], "text": "" + data.value, color: go.Brush.randomColor(0, 127) });
+                                                                    myDiagram.model.addLinkData({ "from": data.loc[0], "to": data.loc[1], "text": v, "color": go.Brush.randomColor(0, 127), "dir": false });
                                                                     myDiagram.commitTransaction("modify");
                                                                 });
                                                                 eventBus.on("close-" + oname, function(sender, data, obj) {
@@ -520,17 +545,14 @@ $(document).ready(function() {
                                                                             padding: 5,
                                                                             contentAlignment: go.Spot.Center,
                                                                             layout: $$(go.ForceDirectedLayout, { defaultSpringLength: 5 }),
-                                                                            maxSelectionCount: 2
+                                                                            maxSelectionCount: 1,
                                                                         });
-                                                                window.dd = myDiagram;
 
                                                                 // define the Node template
                                                                 myDiagram.nodeTemplate =
                                                                     $$(go.Node, "Horizontal", {
                                                                             locationSpot: go.Spot.Center, // Node.location is the center of the Shape
-                                                                            locationObjectName: "SHAPE",
-                                                                            selectionAdorned: false,
-                                                                            selectionChanged: nodeSelectionChanged
+                                                                            locationObjectName: "SHAPE"
                                                                         },
                                                                         $$(go.Panel, "Auto",
                                                                             $$(go.Shape, "Ellipse", {
@@ -564,7 +586,9 @@ $(document).ready(function() {
                                                                             // mark each Shape to get the link geometry with isPanelMain: true
                                                                             { isPanelMain: true, stroke: "black", strokeWidth: 1 },
                                                                             new go.Binding("stroke", "color")),
-                                                                        $$(go.Shape, { toArrow: "Standard" }),
+                                                                        $$(go.Shape, { toArrow: "Standard", fill: null, stroke: null },
+                                                                            new go.Binding("stroke", "dir", function(s, obj) { return s ? obj.part.data.color : null; }).ofObject(),
+                                                                            new go.Binding("fill", "dir", function(s, obj) { return s ? obj.part.data.color : null; }).ofObject()),
                                                                         $$(go.Panel, "Auto",
                                                                             $$(go.Shape, { // the label background, which becomes transparent around the edges
                                                                                 fill: $$(go.Brush, "Radial", { 0: "rgb(240, 240, 240)", 0.3: "rgb(240, 240, 240)", 1: "rgba(240, 240, 240, 0)" }),
@@ -579,32 +603,6 @@ $(document).ready(function() {
                                                                                 new go.Binding("text", "text"))
                                                                         )
                                                                     );
-
-                                                                // Override the clickSelectingTool's standardMouseSelect
-                                                                // If less than 2 nodes are selected, always add to the selection
-                                                                myDiagram.toolManager.clickSelectingTool.standardMouseSelect = function() {
-                                                                    var diagram = this.diagram;
-                                                                    if (diagram === null || !diagram.allowSelect) return;
-                                                                    var e = diagram.lastInput;
-                                                                    var count = diagram.selection.count;
-                                                                    var curobj = diagram.findPartAt(e.documentPoint, false);
-                                                                    if (curobj !== null) {
-                                                                        if (count < 1) { // add the part to the selection
-                                                                            if (!curobj.isSelected) {
-                                                                                var part = curobj;
-                                                                                if (part !== null) part.isSelected = true;
-                                                                            }
-                                                                        } else {
-                                                                            if (!curobj.isSelected) {
-                                                                                var part = curobj;
-                                                                                if (part !== null) diagram.select(part);
-                                                                            }
-                                                                        }
-                                                                    } else if (e.left && !(e.control || e.meta) && !e.shift) {
-                                                                        // left click on background with no modifier: clear selection
-                                                                        diagram.clearSelection();
-                                                                    }
-                                                                }
 
                                                                 var names = JSON.parse(ins.value);
 
@@ -622,16 +620,6 @@ $(document).ready(function() {
                                                                 }*/
 
                                                                 myDiagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
-
-                                                                // When a node is selected show distances from the first selected node.
-                                                                // When a second node is selected, highlight the shortest path between two selected nodes.
-                                                                // If a node is deselected, clear all highlights.
-                                                                function nodeSelectionChanged(node) {
-                                                                    var diagram = node.diagram;
-                                                                    if (diagram === null) return;
-                                                                    diagram.clearHighlighteds();
-                                                                    if (node.isSelected) {}
-                                                                }
                                                             },
                                                             end: function() {
                                                                 eventBus.off("modify-" + oname);
@@ -667,7 +655,7 @@ $(document).ready(function() {
                                                             '    </thead>' +
                                                             '    <tbody>' +
                                                             '      <tr v-for="rows in datas">' +
-                                                            '        <td v-for="row in rows" style="min-width:20px;text-align:center;background-color:' + color(chartColors.grey).alpha(0.5).rgbString() + ';font-weight:bold;' + trans + '">{{row}}</td>' +
+                                                            '        <td v-for="row in rows" style="min-width:20px;text-align:center;background-color:' + color(chartColors.grey).alpha(0.6).rgbString() + ';font-weight:bold;' + trans + '">{{row}}</td>' +
                                                             '      </tr>' +
                                                             '    </tbody>' +
                                                             '  </table>' +
@@ -712,7 +700,7 @@ $(document).ready(function() {
                                                                 this.lost_focus = function(sender, data, obj) {
                                                                     if (app.focuses.length) {
                                                                         for (var f in app.focuses)
-                                                                            $("#" + name + "-app > table > tbody > tr:nth(" + (app.focuses[f][0]) + ") > td:nth(" + (app.focuses[f][1] + 1) + ")").css("background-color", color(chartColors.grey).alpha(0.5).rgbString());
+                                                                            $("#" + name + "-app > table > tbody > tr:nth(" + (app.focuses[f][0]) + ") > td:nth(" + (app.focuses[f][1] + 1) + ")").css("background-color", color(chartColors.grey).alpha(0.6).rgbString());
                                                                         app.focuses = [];
                                                                     }
                                                                 };

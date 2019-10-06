@@ -42,6 +42,8 @@ void trace_end(char* name);
 void trace_rapid(int flag);
 // 追踪一维数组图表
 void trace_array_1d_chart(char* name, void* arr, int type, int cols);
+// 追踪图（邻接矩阵）
+void trace_graph(char* name, void* id, void* adj, int inf, int type, int n);
 ```
 
 ## 知乎文章列表
