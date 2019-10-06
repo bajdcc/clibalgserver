@@ -482,10 +482,20 @@ $(document).ready(function() {
                                                                 });
                                                                 eventBus.on("modify-" + oname, function(sender, data, obj) {
                                                                     if (data.value >= app.inf) return;
+                                                                    app.focuses.push(data.loc);
+                                                                    if (myDiagram.findLinksByExample({ "from": data.loc[0], "to": data.loc[1] }).count > 0) {
+                                                                        myDiagram.findNodeForKey(data.loc[0]).isHighlighted = true;
+                                                                        myDiagram.findNodeForKey(data.loc[1]).isHighlighted = true;
+                                                                        myDiagram.findNodeForKey(data.loc[0]).findLinksOutOf()
+                                                                            .filter(function(l) { return l.data.to == data.loc[1] }).each(function(l) { l.isHighlighted = true; });
+                                                                        myDiagram.findNodeForKey(data.loc[1]).findLinksOutOf()
+                                                                            .filter(function(l) { return l.data.to == data.loc[0] }).each(function(l) { l.isHighlighted = true; });
+
+                                                                        return;
+                                                                    }
                                                                     myDiagram.startTransaction("modify");
                                                                     myDiagram.model.addLinkData({ "from": data.loc[0], "to": data.loc[1], "text": "" + data.value, color: go.Brush.randomColor(0, 127) });
                                                                     myDiagram.commitTransaction("modify");
-                                                                    app.focuses.push(data.loc);
                                                                 });
                                                                 eventBus.on("close-" + oname, function(sender, data, obj) {
                                                                     layer.close(L);
@@ -493,6 +503,9 @@ $(document).ready(function() {
                                                                 this.lost_focus = function(sender, data, obj) {
                                                                     if (app.focuses.length) {
                                                                         //for (var f in app.focuses)
+                                                                        myDiagram.startTransaction("clear highlight");
+                                                                        myDiagram.clearHighlighteds();
+                                                                        myDiagram.commitTransaction("clear highlight");
                                                                         app.focuses = [];
                                                                     }
                                                                 };
@@ -509,6 +522,7 @@ $(document).ready(function() {
                                                                             layout: $$(go.ForceDirectedLayout, { defaultSpringLength: 5 }),
                                                                             maxSelectionCount: 2
                                                                         });
+                                                                window.dd = myDiagram;
 
                                                                 // define the Node template
                                                                 myDiagram.nodeTemplate =
@@ -527,13 +541,13 @@ $(document).ready(function() {
                                                                                     desiredSize: new go.Size(30, 30),
                                                                                     portId: ""
                                                                                 }, // so links will go to the shape, not the whole node
-                                                                                new go.Binding("fill", "isSelected", function(s, obj) { return s ? "red" : obj.part.data.color; }).ofObject()),
-                                                                            $$(go.TextBlock,
-                                                                                new go.Binding("text", "distance", function(d) {
-                                                                                    if (d === Infinity) return "INF";
-                                                                                    else return d | 0;
-                                                                                }))),
-                                                                        $$(go.TextBlock,
+                                                                                new go.Binding("fill", "isHighlighted", function(s, obj) { return s ? "red" : obj.part.data.color; }).ofObject())),
+                                                                        $$(go.TextBlock, {
+                                                                                textAlign: "center",
+                                                                                font: "24pt helvetica, arial, sans-serif",
+                                                                                stroke: "#555555",
+                                                                                margin: 4
+                                                                            },
                                                                             new go.Binding("text")));
 
                                                                 // define the Link template
@@ -543,21 +557,22 @@ $(document).ready(function() {
                                                                             curve: go.Link.Bezier,
                                                                             layerName: "Background" // don't cross in front of any nodes
                                                                         },
+                                                                        $$(go.Shape, // this shape only shows when it isHighlighted
+                                                                            { isPanelMain: true, stroke: null, strokeWidth: 5 },
+                                                                            new go.Binding("stroke", "isHighlighted", function(h) { return h ? "red" : null; }).ofObject()),
                                                                         $$(go.Shape,
                                                                             // mark each Shape to get the link geometry with isPanelMain: true
                                                                             { isPanelMain: true, stroke: "black", strokeWidth: 1 },
                                                                             new go.Binding("stroke", "color")),
                                                                         $$(go.Shape, { toArrow: "Standard" }),
                                                                         $$(go.Panel, "Auto",
-                                                                            $$(go.Shape, // the label background, which becomes transparent around the edges
-                                                                                {
-                                                                                    fill: $$(go.Brush, "Radial", { 0: "rgb(240, 240, 240)", 0.3: "rgb(240, 240, 240)", 1: "rgba(240, 240, 240, 0)" }),
-                                                                                    stroke: null
-                                                                                }),
-                                                                            $$(go.TextBlock, // the label text
-                                                                                {
+                                                                            $$(go.Shape, { // the label background, which becomes transparent around the edges
+                                                                                fill: $$(go.Brush, "Radial", { 0: "rgb(240, 240, 240)", 0.3: "rgb(240, 240, 240)", 1: "rgba(240, 240, 240, 0)" }),
+                                                                                stroke: null
+                                                                            }),
+                                                                            $$(go.TextBlock, { // the label text
                                                                                     textAlign: "center",
-                                                                                    font: "10pt helvetica, arial, sans-serif",
+                                                                                    font: "18pt helvetica, arial, sans-serif",
                                                                                     stroke: "#555555",
                                                                                     margin: 4
                                                                                 },
