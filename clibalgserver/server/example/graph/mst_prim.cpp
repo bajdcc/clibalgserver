@@ -61,10 +61,10 @@ int main(int argc, char** argv) {
     }
     trace_rapid(0);
     char** nm = (char**)name;
+    visited[start] = 1;
     for (i = 0, k = 0; i < n; i++) {
         int min = INF, m, t;
         for (j = 0; j < n; j++) {
-            if (j == start) continue;
             if (visited[j] == 0 && dist[j] < min) {
                 dist[j] = dist[j];
                 min = dist[j];

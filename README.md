@@ -64,3 +64,7 @@ void trace_graph(char* name, void* id, void* adj, int inf, int type, int n);
 ![main](https://raw.githubusercontent.com/bajdcc/clibalgserver/master/screenshots/3.png)
 
 ![main](https://raw.githubusercontent.com/bajdcc/clibalgserver/master/screenshots/4.png)
+
+![main](https://raw.githubusercontent.com/bajdcc/clibalgserver/master/screenshots/5.png)
+
+![main](https://raw.githubusercontent.com/bajdcc/clibalgserver/master/screenshots/6.png)
