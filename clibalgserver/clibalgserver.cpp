@@ -122,7 +122,7 @@ int handle_api(API api, evbuffer* buf, char* data, size_t len)
             Writer<StringBuffer> writer(buffer);
             r.Accept(writer);
 
-            evbuffer_add_printf(buf, buffer.GetString());
+            evbuffer_add_printf(buf, "%s", buffer.GetString());
             return HTTP_OK;
         }
         else {
@@ -231,10 +231,10 @@ void generic_handler(struct evhttp_request* req, void* arg)
                     else if (strcmp(url + 4, "/reload") == 0)
                         suc = handle_api(API_reload, buf, b, post_size);
                     else
-                        evbuffer_add_printf(buf, R"(Invalid API)", b);
+                        evbuffer_add_printf(buf, R"(Invalid API: %s)", b);
                 }
                 else
-                    evbuffer_add_printf(buf, R"(Invalid API)", b);
+                    evbuffer_add_printf(buf, R"(Invalid API: %s)", b);
                 free(b);
             }
         }

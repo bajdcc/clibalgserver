@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     L = n;
     char* name = sname(n);
     int* adj = malloc(n * n * sizeof(int));
-    trace_log("Dijkstra最短路径");
+    trace_log("Prim最小生成树");
     trace_array_2d("邻接矩阵", adj, T_INT, n, n);
     trace_graph("图", name, adj, INF, T_INT, n);
     trace_log("初始化");
