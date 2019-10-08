@@ -4,6 +4,8 @@
 
 [代码打包下载](https://ci.appveyor.com/project/bajdcc/clibalgserver/build/artifacts)
 
+[linux编译版本](https://github.com/bajdcc/clibalgserver_mac)
+
 参见：[【算法可视化计划】启程](https://zhuanlan.zhihu.com/p/83573660)
 
 实现一个算法可视化网站。
@@ -44,6 +46,8 @@ void trace_rapid(int flag);
 void trace_array_1d_chart(char* name, void* arr, int type, int cols);
 // 追踪图（邻接矩阵）
 void trace_graph(char* name, void* id, void* adj, int inf, int type, int n);
+// 等待
+void trace_delay(int flag);
 ```
 
 ## 知乎文章列表

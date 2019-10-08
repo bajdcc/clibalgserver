@@ -394,7 +394,7 @@ namespace clib {
         return pwd;
     }
 
-    char* cvfs::file_time(char* result, const time_t & t) const {
+    char* cvfs::file_time(char* result, int size, const time_t & t) const {
         tm timeptr;
         localtime_s(&timeptr, &t);
         /*static const char wday_name[][4] = {
@@ -405,13 +405,13 @@ namespace clib {
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         };
         if (year == timeptr.tm_year) {
-            snprintf(result, sizeof(result), "%.3s%3d %.2d:%.2d",
+            snprintf(result, size, "%.3s%3d %.2d:%.2d",
                 mon_name[timeptr.tm_mon],
                 timeptr.tm_mday, timeptr.tm_hour,
                 timeptr.tm_min);
         }
         else {
-            snprintf(result, sizeof(result), "%.3s%3d %5d",
+            snprintf(result, size, "%.3s%3d %5d",
                 //wday_name[timeptr->tm_wday],
                 mon_name[timeptr.tm_mon],
                 timeptr.tm_mday,
@@ -438,7 +438,7 @@ namespace clib {
             (char*)node->mod,
             account[node->owner].name.data(),
             node->data.size(),
-            file_time(result, node->time.create),
+            file_time(result, sizeof(result), node->time.create),
             types[(int)node->type],
             limit_string(name, 40).data());
         os << fmt << std::endl;
